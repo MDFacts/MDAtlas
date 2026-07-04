@@ -61,6 +61,7 @@ export function RegionMesh({ part, ghosted, selected, onSelect }: RegionMeshProp
     >
       {geometryFor(part)}
       <meshStandardMaterial
+        key={ghosted ? 'ghosted' : 'solid'}
         color={part.color}
         roughness={0.55}
         metalness={0.05}
