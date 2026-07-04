@@ -36,17 +36,20 @@ const ARM_TILT = 0.3 // A-pose: ~17° off vertical (measured against the male mo
 export const HIT_REGIONS: HitRegion[] = [
   region('head', 'head', 'sphere', [0.26, 20, 16], [0, 3.24, 0], { scale: [0.8, 1, 0.9] }),
   region('neck', 'neck', 'cylinder', [0.1, 0.12, 0.22, 16], [0, 2.98, 0]),
-  region('chest', 'chest', 'cylinder', [0.34, 0.38, 0.58, 24], [0, 2.56, 0], {
+  // Chest ends at the solar plexus (xiphoid ≈ y 2.50 on the male) — it must not
+  // reach toward the navel; everything below is upper abdomen.
+  region('chest', 'chest', 'cylinder', [0.34, 0.38, 0.42, 24], [0, 2.68, 0], {
     scale: [1, 1, 0.58],
   }),
-  region('upperAbdomen', 'upperAbdomen', 'cylinder', [0.28, 0.32, 0.4, 24], [0, 2.1, 0], {
+  // Solar plexus down to the navel (≈ y 2.06).
+  region('upperAbdomen', 'upperAbdomen', 'cylinder', [0.28, 0.32, 0.44, 24], [0, 2.28, 0], {
     scale: [1, 1, 0.55],
   }),
-  region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [0.19, 16, 12], [-0.14, 1.8, 0.04], {
-    scale: [1, 0.85, 0.55],
+  region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [0.19, 16, 12], [-0.14, 1.86, 0.04], {
+    scale: [1, 0.95, 0.55],
   }),
-  region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [0.19, 16, 12], [0.14, 1.8, 0.04], {
-    scale: [1, 0.85, 0.55],
+  region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [0.19, 16, 12], [0.14, 1.86, 0.04], {
+    scale: [1, 0.95, 0.55],
   }),
   region('pelvis', 'pelvis', 'cylinder', [0.3, 0.26, 0.36, 24], [0, 1.6, 0], {
     scale: [1, 1, 0.6],
