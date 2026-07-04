@@ -41,15 +41,16 @@ export const HIT_REGIONS: HitRegion[] = [
   region('chest', 'chest', 'cylinder', [0.34, 0.38, 0.42, 24], [0, 2.68, 0], {
     scale: [1, 1, 0.58],
   }),
-  // Solar plexus down to the navel (≈ y 2.06).
-  region('upperAbdomen', 'upperAbdomen', 'cylinder', [0.28, 0.32, 0.44, 24], [0, 2.28, 0], {
+  // Solar plexus down to the navel — bottom overlaps the lower-abdomen volumes
+  // so no front ray can slip between them to the back regions.
+  region('upperAbdomen', 'upperAbdomen', 'cylinder', [0.28, 0.32, 0.45, 24], [0, 2.27, 0], {
     scale: [1, 1, 0.55],
   }),
-  region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [0.19, 16, 12], [-0.14, 1.86, 0.04], {
-    scale: [1, 0.95, 0.55],
+  region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [0.19, 16, 12], [-0.14, 1.9, 0.04], {
+    scale: [1, 1, 0.55],
   }),
-  region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [0.19, 16, 12], [0.14, 1.86, 0.04], {
-    scale: [1, 0.95, 0.55],
+  region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [0.19, 16, 12], [0.14, 1.9, 0.04], {
+    scale: [1, 1, 0.55],
   }),
   region('pelvis', 'pelvis', 'cylinder', [0.3, 0.26, 0.36, 24], [0, 1.6, 0], {
     scale: [1, 1, 0.6],
@@ -68,6 +69,8 @@ export const HIT_REGIONS: HitRegion[] = [
   region('leftLeg', 'leftLeg', 'capsule', [0.13, 1.4, 6, 12], [0.16, 0.8, 0], {
     rotation: [0, 0, -0.02],
   }),
-  region('upperBack', 'upperBack', 'box', [0.62, 0.6, 0.14], [0, 2.55, -0.16]),
-  region('lowerBack', 'lowerBack', 'box', [0.46, 0.5, 0.12], [0, 1.98, -0.14]),
+  // Back volumes sit proud of the torso depth so rays from the back view always
+  // reach them before the front torso volumes.
+  region('upperBack', 'upperBack', 'box', [0.62, 0.6, 0.2], [0, 2.55, -0.24]),
+  region('lowerBack', 'lowerBack', 'box', [0.46, 0.52, 0.2], [0, 1.97, -0.22]),
 ]
