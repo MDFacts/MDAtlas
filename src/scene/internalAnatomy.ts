@@ -43,14 +43,15 @@ for (let i = 0; i < 14; i += 1) {
   )
 }
 
-// --- Ribcage: 7 visible rib pairs forming a barrel, sloping slightly forward-down ---
+// --- Ribcage: 12 rib pairs forming a barrel that widens mid-thorax then tapers,
+// sloping forward-down. Lower pairs overlie the upper abdomen. ---
 const ribs: BodyPart[] = []
-const RIB_RADII = [0.23, 0.27, 0.3, 0.32, 0.33, 0.32, 0.29]
+const RIB_RADII = [0.2, 0.24, 0.27, 0.295, 0.315, 0.325, 0.33, 0.325, 0.31, 0.285, 0.25, 0.21]
 for (let i = 0; i < RIB_RADII.length; i += 1) {
   ribs.push(
-    bone(`rib-${i}`, 'chest', 'torus', [RIB_RADII[i], 0.017, 8, 36], [0, 2.82 - i * 0.073, -0.02], {
-      rotation: [Math.PI / 2 + 0.09, 0, 0],
-      scale: [1, 1, 0.62],
+    bone(`rib-${i}`, i < 8 ? 'chest' : 'epigastric', 'torus', [RIB_RADII[i], 0.015, 8, 40], [0, 2.86 - i * 0.066, -0.02], {
+      rotation: [Math.PI / 2 + 0.12, 0, 0],
+      scale: [1, 1, 0.6],
     }),
   )
 }
@@ -80,56 +81,65 @@ export const SKELETON_PARTS: BodyPart[] = [
     rotation: [0, 0.15, 0],
   }),
 
-  // Pelvis: iliac wings, sacrum, pubic bridge
-  bone('rightIliac', 'pelvis', 'sphere', [0.17, 16, 12], [-0.13, 1.6, -0.02], {
-    scale: [0.6, 0.85, 0.4],
-    rotation: [0, 0, 0.4],
+  // Pelvis: broad iliac wings, sacrum, pubic bridge. The hip sockets sit near the
+  // outer edges so the femoral heads attach wide, not at the midline.
+  bone('rightIliac', 'pelvis', 'sphere', [0.2, 16, 12], [-0.17, 1.62, -0.02], {
+    scale: [0.62, 0.9, 0.42],
+    rotation: [0, 0, 0.35],
   }),
-  bone('leftIliac', 'pelvis', 'sphere', [0.17, 16, 12], [0.13, 1.6, -0.02], {
-    scale: [0.6, 0.85, 0.4],
-    rotation: [0, 0, -0.4],
+  bone('leftIliac', 'pelvis', 'sphere', [0.2, 16, 12], [0.17, 1.62, -0.02], {
+    scale: [0.62, 0.9, 0.42],
+    rotation: [0, 0, -0.35],
   }),
-  bone('sacrum', 'lowerBack', 'box', [0.11, 0.2, 0.05], [0, 1.56, -0.09], { rotation: [0.15, 0, 0] }),
-  bone('pubis', 'pelvis', 'box', [0.14, 0.05, 0.04], [0, 1.44, 0.1]),
+  bone('sacrum', 'lowerBack', 'box', [0.12, 0.22, 0.05], [0, 1.57, -0.09], { rotation: [0.15, 0, 0] }),
+  bone('pubis', 'pelvis', 'box', [0.2, 0.05, 0.04], [0, 1.44, 0.1]),
 
-  // Arms (A-pose ≈17° out): humerus → elbow → radius/ulna → hand
-  bone('rightHumerusHead', 'rightShoulder', 'sphere', [0.05, 12, 10], [-0.38, 2.78, 0]),
-  bone('leftHumerusHead', 'leftShoulder', 'sphere', [0.05, 12, 10], [0.38, 2.78, 0]),
-  bone('rightHumerus', 'rightArm', 'cylinder', [0.035, 0.04, 0.62, 10], [-0.47, 2.5, 0], {
-    rotation: [0, 0, -0.3],
+  // Arms follow the model's A-pose line shoulder → elbow → wrist → hand
+  // (≈16° off vertical, ending near the hips), matching the arm hit-regions.
+  bone('rightHumerusHead', 'rightShoulder', 'sphere', [0.052, 12, 10], [-0.37, 2.79, 0]),
+  bone('leftHumerusHead', 'leftShoulder', 'sphere', [0.052, 12, 10], [0.37, 2.79, 0]),
+  bone('rightHumerus', 'rightArm', 'cylinder', [0.035, 0.042, 0.74, 10], [-0.46, 2.42, 0], {
+    rotation: [0, 0, -0.28],
   }),
-  bone('leftHumerus', 'leftArm', 'cylinder', [0.035, 0.04, 0.62, 10], [0.47, 2.5, 0], {
-    rotation: [0, 0, 0.3],
+  bone('leftHumerus', 'leftArm', 'cylinder', [0.035, 0.042, 0.74, 10], [0.46, 2.42, 0], {
+    rotation: [0, 0, 0.28],
   }),
-  bone('rightElbow', 'rightArm', 'sphere', [0.042, 12, 10], [-0.56, 2.21, 0]),
-  bone('leftElbow', 'leftArm', 'sphere', [0.042, 12, 10], [0.56, 2.21, 0]),
-  bone('rightRadius', 'rightArm', 'cylinder', [0.022, 0.026, 0.58, 8], [-0.645, 1.93, 0.02], {
-    rotation: [0, 0, -0.3],
+  bone('rightElbow', 'rightArm', 'sphere', [0.044, 12, 10], [-0.55, 2.06, 0]),
+  bone('leftElbow', 'leftArm', 'sphere', [0.044, 12, 10], [0.55, 2.06, 0]),
+  bone('rightRadius', 'rightArm', 'cylinder', [0.022, 0.028, 0.66, 8], [-0.65, 1.72, 0.02], {
+    rotation: [0, 0, -0.28],
   }),
-  bone('rightUlna', 'rightArm', 'cylinder', [0.018, 0.022, 0.58, 8], [-0.655, 1.92, -0.02], {
-    rotation: [0, 0, -0.3],
+  bone('rightUlna', 'rightArm', 'cylinder', [0.018, 0.023, 0.66, 8], [-0.66, 1.71, -0.02], {
+    rotation: [0, 0, -0.28],
   }),
-  bone('leftRadius', 'leftArm', 'cylinder', [0.022, 0.026, 0.58, 8], [0.645, 1.93, 0.02], {
-    rotation: [0, 0, 0.3],
+  bone('leftRadius', 'leftArm', 'cylinder', [0.022, 0.028, 0.66, 8], [0.65, 1.72, 0.02], {
+    rotation: [0, 0, 0.28],
   }),
-  bone('leftUlna', 'leftArm', 'cylinder', [0.018, 0.022, 0.58, 8], [0.655, 1.92, -0.02], {
-    rotation: [0, 0, 0.3],
+  bone('leftUlna', 'leftArm', 'cylinder', [0.018, 0.023, 0.66, 8], [0.66, 1.71, -0.02], {
+    rotation: [0, 0, 0.28],
   }),
-  bone('rightHand', 'rightArm', 'box', [0.06, 0.14, 0.03], [-0.74, 1.6, 0], {
-    rotation: [0, 0, -0.3],
+  bone('rightHand', 'rightArm', 'box', [0.06, 0.15, 0.03], [-0.75, 1.35, 0], {
+    rotation: [0, 0, -0.28],
   }),
-  bone('leftHand', 'leftArm', 'box', [0.06, 0.14, 0.03], [0.74, 1.6, 0], {
-    rotation: [0, 0, 0.3],
+  bone('leftHand', 'leftArm', 'box', [0.06, 0.15, 0.03], [0.75, 1.35, 0], {
+    rotation: [0, 0, 0.28],
   }),
 
-  // Legs: femur → knee → tibia/fibula → foot
-  bone('rightFemurHead', 'pelvis', 'sphere', [0.045, 12, 10], [-0.16, 1.56, 0]),
-  bone('leftFemurHead', 'pelvis', 'sphere', [0.045, 12, 10], [0.16, 1.56, 0]),
-  bone('rightFemur', 'rightLeg', 'cylinder', [0.04, 0.046, 0.62, 10], [-0.175, 1.24, 0], {
-    rotation: [0, 0, -0.03],
+  // Legs: femoral head sits wide in the hip socket, angling in toward the knee
+  // (natural Q-angle), then tibia/fibula → foot.
+  bone('rightFemurHead', 'pelvis', 'sphere', [0.055, 12, 10], [-0.2, 1.58, 0]),
+  bone('leftFemurHead', 'pelvis', 'sphere', [0.055, 12, 10], [0.2, 1.58, 0]),
+  bone('rightFemurNeck', 'pelvis', 'cylinder', [0.028, 0.032, 0.12, 8], [-0.17, 1.53, 0], {
+    rotation: [0, 0, 0.9],
   }),
-  bone('leftFemur', 'leftLeg', 'cylinder', [0.04, 0.046, 0.62, 10], [0.175, 1.24, 0], {
+  bone('leftFemurNeck', 'pelvis', 'cylinder', [0.028, 0.032, 0.12, 8], [0.17, 1.53, 0], {
+    rotation: [0, 0, -0.9],
+  }),
+  bone('rightFemur', 'rightLeg', 'cylinder', [0.04, 0.048, 0.66, 10], [-0.19, 1.22, 0], {
     rotation: [0, 0, 0.03],
+  }),
+  bone('leftFemur', 'leftLeg', 'cylinder', [0.04, 0.048, 0.66, 10], [0.19, 1.22, 0], {
+    rotation: [0, 0, -0.03],
   }),
   bone('rightPatella', 'rightLeg', 'sphere', [0.042, 12, 10], [-0.185, 0.92, 0.06]),
   bone('leftPatella', 'leftLeg', 'sphere', [0.042, 12, 10], [0.185, 0.92, 0.06]),
