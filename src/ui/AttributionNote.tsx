@@ -10,7 +10,7 @@ export function AttributionNote() {
   const bodySex = useAssessmentStore((state) => state.bodySex)
 
   return (
-    <div className="no-print pointer-events-none absolute bottom-1 right-1.5 text-[9px] leading-none text-slate-500 opacity-30">
+    <div className="no-print pointer-events-none absolute bottom-1.5 right-2 font-mono text-[9px] leading-none text-slate-400/70">
       {CREDITS[bodySex]}
     </div>
   )

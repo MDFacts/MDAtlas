@@ -121,7 +121,7 @@ export function RealisticBody({ url, material }: { url: string; material: BodyMa
           roughness: material.roughness,
           metalness: material.metalness ?? 0.02,
           transparent: ghost,
-          opacity: ghost ? 0.18 : 1,
+          opacity: ghost ? 0.22 : 1,
           depthWrite: !ghost,
         })
         child.castShadow = !ghost

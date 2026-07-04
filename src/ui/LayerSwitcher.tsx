@@ -1,11 +1,15 @@
+import type { ComponentType, SVGProps } from 'react'
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
 import type { BodySex } from '../scene/modelConfig'
 import { useAssessmentStore } from '../state/assessmentStore'
+import { OrganIcon, SkeletonIcon, SkinIcon } from './icons'
 
-const LAYERS: { id: AnatomyLayer; label: string }[] = [
-  { id: 'skin', label: 'Skin' },
-  { id: 'skeleton', label: 'Skeleton' },
-  { id: 'organs', label: 'Organs' },
+type IconType = ComponentType<SVGProps<SVGSVGElement>>
+
+const LAYERS: { id: AnatomyLayer; label: string; icon: IconType }[] = [
+  { id: 'skin', label: 'Skin', icon: SkinIcon },
+  { id: 'skeleton', label: 'Skeleton', icon: SkeletonIcon },
+  { id: 'organs', label: 'Organs', icon: OrganIcon },
 ]
 
 const BODIES: { id: BodySex; label: string }[] = [
@@ -20,45 +24,52 @@ export function LayerSwitcher() {
   const setBodySex = useAssessmentStore((state) => state.setBodySex)
 
   return (
-    <div className="no-print absolute left-4 top-4 flex flex-col gap-3">
-      <div className="flex flex-col gap-1 rounded-xl bg-slate-900/80 p-1.5 backdrop-blur">
-        <span className="px-2 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-          Layer
-        </span>
-        {LAYERS.map((layer) => (
-          <button
-            key={layer.id}
-            type="button"
-            onClick={() => setLayer(layer.id)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
-              activeLayer === layer.id
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            {layer.label}
-          </button>
-        ))}
+    <div className="no-print absolute left-4 top-4 flex flex-col gap-2.5">
+      <div className="glass rounded-2xl p-2">
+        <span className="eyebrow block px-1.5 pb-1.5 pt-0.5">Layer</span>
+        <div className="flex flex-col gap-1">
+          {LAYERS.map(({ id, label, icon: Icon }) => {
+            const active = activeLayer === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setLayer(id)}
+                className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                  active
+                    ? 'bg-gradient-to-b from-blue-500 to-brand-deep text-white shadow-[0_6px_14px_rgba(37,99,235,0.32)]'
+                    : 'text-ink-soft hover:bg-brand-tint'
+                }`}
+              >
+                <Icon width={16} height={16} className={active ? 'text-white' : 'text-brand'} />
+                {label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1 rounded-xl bg-slate-900/80 p-1.5 backdrop-blur">
-        <span className="px-2 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-          Body
-        </span>
-        {BODIES.map((body) => (
-          <button
-            key={body.id}
-            type="button"
-            onClick={() => setBodySex(body.id)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
-              bodySex === body.id
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            {body.label}
-          </button>
-        ))}
+      <div className="glass rounded-2xl p-2">
+        <span className="eyebrow block px-1.5 pb-1.5 pt-0.5">Body</span>
+        <div className="flex gap-1">
+          {BODIES.map(({ id, label }) => {
+            const active = bodySex === id
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setBodySex(id)}
+                className={`flex-1 rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+                  active
+                    ? 'bg-gradient-to-b from-blue-500 to-brand-deep text-white shadow-[0_6px_14px_rgba(37,99,235,0.32)]'
+                    : 'text-ink-soft hover:bg-brand-tint'
+                }`}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

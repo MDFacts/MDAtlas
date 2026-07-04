@@ -8,9 +8,9 @@ import { PainMarker } from './PainMarker'
 import { ProceduralBody } from './ProceduralBody'
 import { RealisticBody } from './RealisticBody'
 
-const SKIN_MATERIAL = { color: '#c8b6a6', roughness: 0.72 }
-const SKIN_GHOST_MATERIAL = { color: '#c8b6a6', roughness: 0.72, ghost: true }
-const BONE_MATERIAL = { color: '#e6e1d2', roughness: 0.55, metalness: 0.03 }
+const SKIN_MATERIAL = { color: '#d9c3b0', roughness: 0.7 }
+const SKIN_GHOST_MATERIAL = { color: '#8ba6c8', roughness: 0.6, ghost: true }
+const BONE_MATERIAL = { color: '#f2eee2', roughness: 0.5, metalness: 0.04 }
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)

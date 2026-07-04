@@ -21,30 +21,47 @@ export function InterviewPanel() {
   }
 
   const answeredCount = Object.keys(interview.answers).length
+  const estimate = Math.max(answeredCount + 1, 6)
+  const progress = Math.min(100, (answeredCount / estimate) * 100)
 
   return (
-    <div className="flex h-full flex-col p-5" data-testid="interview">
+    <div className="flex h-full flex-col p-6" data-testid="interview">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-100">A few smart questions</h2>
-        <span className="text-xs text-slate-500">{answeredCount} answered</span>
+        <span className="eyebrow">Step 03 · Smart follow-up</span>
+        <span className="font-mono text-[11px] text-muted">{answeredCount} answered</span>
       </div>
-      <p className="mt-1 text-xs text-slate-500">
-        Each answer narrows down what could be going on.
-      </p>
 
-      <p className="mt-8 text-base font-medium text-slate-200" data-testid="question-text">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas-deep">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-brand to-cyan transition-[width] duration-500"
+          style={{ width: `${Math.max(8, progress)}%` }}
+        />
+      </div>
+
+      <p className="mt-2 text-xs text-muted">Each answer narrows down what could be going on.</p>
+
+      <p
+        key={interview.currentNodeId}
+        className="reveal mt-8 font-display text-xl font-semibold leading-snug text-ink"
+        data-testid="question-text"
+      >
         {question.text}
       </p>
-      <div className="mt-4 flex flex-col gap-2">
-        {question.options.map((option) => (
+
+      <div className="mt-5 flex flex-col gap-2.5">
+        {question.options.map((option, i) => (
           <button
             key={option.value}
             type="button"
             data-testid={`answer-${option.value}`}
             onClick={() => answer(option.value)}
-            className="rounded-lg border border-slate-700 bg-slate-900/60 px-4 py-3 text-left text-sm text-slate-200 transition hover:border-blue-500 hover:bg-blue-600/10"
+            className="option reveal group flex items-center justify-between px-4 py-3.5 text-left text-sm font-semibold"
+            style={{ animationDelay: `${80 + i * 55}ms` }}
           >
             {option.label}
+            <span className="text-brand opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100">
+              →
+            </span>
           </button>
         ))}
       </div>
@@ -52,7 +69,7 @@ export function InterviewPanel() {
       <button
         type="button"
         onClick={restart}
-        className="mt-auto rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+        className="btn btn-ghost mt-auto px-4 py-2.5 text-sm"
       >
         Start over
       </button>

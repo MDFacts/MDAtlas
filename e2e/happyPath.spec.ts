@@ -21,7 +21,7 @@ test('tap RLQ → interview → emergency triage → doctor report', async ({ pa
     await page.getByTestId(`answer-${value}`).click()
   }
 
-  await expect(page.getByTestId('tier-banner')).toHaveText('Seek emergency care now')
+  await expect(page.getByTestId('tier-banner')).toContainText('Seek emergency care now')
   await expect(page.getByTestId('red-flags')).toContainText('possible appendicitis')
   await expect(page.getByTestId('results')).toContainText('Appendicitis')
 

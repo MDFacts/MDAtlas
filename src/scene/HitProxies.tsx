@@ -112,7 +112,7 @@ export function HitProxies({
           </mesh>
           <Html
             position={[0.14, 0.1, 0]}
-            className="pointer-events-none select-none whitespace-nowrap rounded-full border border-blue-500/50 bg-slate-950/85 px-2.5 py-1 text-xs text-blue-200 backdrop-blur"
+            className="pointer-events-none select-none whitespace-nowrap rounded-full border border-white/80 bg-white/85 px-2.5 py-1 text-xs font-semibold text-brand shadow-[0_6px_18px_rgba(23,55,110,0.18)] backdrop-blur"
             zIndexRange={[10, 0]}
           >
             {regionName(hover.regionId)}

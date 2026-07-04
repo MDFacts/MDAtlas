@@ -18,17 +18,49 @@ const PAIN_TYPES: PainType[] = [
 ]
 
 const ONSETS = [
-  { value: 'hours', label: 'In the last few hours' },
+  { value: 'hours', label: 'Last few hours' },
   { value: 'today', label: 'Today' },
   { value: '2-3-days', label: '2–3 days ago' },
-  { value: 'week', label: 'About a week ago' },
-  { value: 'longer', label: 'Longer than a week' },
+  { value: 'week', label: 'About a week' },
+  { value: 'longer', label: 'Over a week' },
 ]
 
 const FACTORS = ['Movement', 'Rest', 'Eating', 'Breathing deeply', 'Pressing on it', 'Heat or ice']
 
 function toggle(list: readonly string[], value: string): string[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value]
+}
+
+function FactorGroup({
+  label,
+  tone,
+  selected,
+  onToggle,
+}: {
+  label: string
+  tone: 'good' | 'bad'
+  selected: string[]
+  onToggle: (value: string) => void
+}) {
+  return (
+    <>
+      <p className="mt-5 text-sm font-bold text-ink">{label}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {FACTORS.map((factor) => (
+          <button
+            key={factor}
+            type="button"
+            data-active={selected.includes(factor)}
+            data-tone={tone}
+            onClick={() => onToggle(factor)}
+            className="chip px-3 py-1.5 text-xs"
+          >
+            {factor}
+          </button>
+        ))}
+      </div>
+    </>
+  )
 }
 
 export function PainInputPanel() {
@@ -49,7 +81,7 @@ export function PainInputPanel() {
   }
 
   const handleSubmit = () => {
-    const candidate = {
+    const parsed = painProfileSchema.safeParse({
       regionId,
       painTypes,
       severity,
@@ -57,8 +89,7 @@ export function PainInputPanel() {
       betterFactors,
       worseFactors,
       radiatesTo: radiates.trim() === '' ? null : radiates.trim(),
-    }
-    const parsed = painProfileSchema.safeParse(candidate)
+    })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Please complete the form')
       return
@@ -67,123 +98,111 @@ export function PainInputPanel() {
     submitPain(parsed.data)
   }
 
-  return (
-    <div className="flex h-full flex-col overflow-y-auto p-5" data-testid="pain-input">
-      <h2 className="text-lg font-semibold text-slate-100">
-        Describe your pain — {regionName(regionId)}
-      </h2>
+  const sevColor =
+    severity >= 8 ? 'text-danger' : severity >= 5 ? 'text-warn' : 'text-brand'
 
-      <p className="mt-4 text-sm font-medium text-slate-300">What does it feel like?</p>
+  return (
+    <div className="flex h-full flex-col p-6" data-testid="pain-input">
+      <span className="eyebrow">Step 02 · Describe</span>
+      <h2 className="mt-2 font-display text-2xl font-bold leading-tight text-ink">Describe your pain</h2>
+      <p className="mt-1 inline-flex items-center gap-2 text-sm text-ink-soft">
+        <span className="h-2 w-2 rounded-full bg-brand shadow-[0_0_0_3px_rgba(37,99,235,0.15)]" />
+        {regionName(regionId)}
+      </p>
+
+      <p className="mt-6 text-sm font-bold text-ink">What does it feel like?</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {PAIN_TYPES.map((type) => (
           <button
             key={type}
             type="button"
+            data-active={painTypes.includes(type)}
             onClick={() => setPainTypes((prev) => toggle(prev, type) as PainType[])}
-            className={`rounded-full border px-3 py-1 text-sm capitalize transition ${
-              painTypes.includes(type)
-                ? 'border-blue-500 bg-blue-600/30 text-blue-200'
-                : 'border-slate-700 text-slate-300 hover:border-slate-500'
-            }`}
+            className="chip px-3.5 py-1.5 text-sm capitalize"
           >
             {type}
           </button>
         ))}
       </div>
 
-      <p className="mt-5 text-sm font-medium text-slate-300">
-        How severe is it? <span className="text-blue-400">{severity}/10</span>
-      </p>
+      <div className="mt-6 flex items-baseline justify-between">
+        <p className="text-sm font-bold text-ink">How severe is it?</p>
+        <span className={`font-mono text-lg font-semibold ${sevColor}`}>
+          {severity}
+          <span className="text-sm text-muted">/10</span>
+        </span>
+      </div>
       <input
         type="range"
         min={1}
         max={10}
         value={severity}
         onChange={(event) => setSeverity(Number(event.target.value))}
-        className="mt-2 w-full accent-blue-500"
+        className="sev mt-3 w-full"
+        style={{ ['--pct' as string]: `${((severity - 1) / 9) * 100}%` }}
         data-testid="severity-slider"
       />
+      <div className="mt-1 flex justify-between font-mono text-[10px] text-muted">
+        <span>Mild</span>
+        <span>Severe</span>
+      </div>
 
-      <p className="mt-5 text-sm font-medium text-slate-300">When did it start?</p>
+      <p className="mt-6 text-sm font-bold text-ink">When did it start?</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {ONSETS.map((option) => (
           <button
             key={option.value}
             type="button"
+            data-active={onset === option.value}
             onClick={() => setOnset(option.value)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${
-              onset === option.value
-                ? 'border-blue-500 bg-blue-600/30 text-blue-200'
-                : 'border-slate-700 text-slate-300 hover:border-slate-500'
-            }`}
+            className="chip px-3.5 py-1.5 text-sm"
           >
             {option.label}
           </button>
         ))}
       </div>
 
-      <p className="mt-5 text-sm font-medium text-slate-300">What makes it better?</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {FACTORS.map((factor) => (
-          <button
-            key={factor}
-            type="button"
-            onClick={() => setBetterFactors((prev) => toggle(prev, factor))}
-            className={`rounded-full border px-3 py-1 text-xs transition ${
-              betterFactors.includes(factor)
-                ? 'border-emerald-500 bg-emerald-600/20 text-emerald-200'
-                : 'border-slate-700 text-slate-400 hover:border-slate-500'
-            }`}
-          >
-            {factor}
-          </button>
-        ))}
-      </div>
+      <FactorGroup
+        label="What makes it better?"
+        tone="good"
+        selected={betterFactors}
+        onToggle={(v) => setBetterFactors((prev) => toggle(prev, v))}
+      />
+      <FactorGroup
+        label="What makes it worse?"
+        tone="bad"
+        selected={worseFactors}
+        onToggle={(v) => setWorseFactors((prev) => toggle(prev, v))}
+      />
 
-      <p className="mt-5 text-sm font-medium text-slate-300">What makes it worse?</p>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {FACTORS.map((factor) => (
-          <button
-            key={factor}
-            type="button"
-            onClick={() => setWorseFactors((prev) => toggle(prev, factor))}
-            className={`rounded-full border px-3 py-1 text-xs transition ${
-              worseFactors.includes(factor)
-                ? 'border-rose-500 bg-rose-600/20 text-rose-200'
-                : 'border-slate-700 text-slate-400 hover:border-slate-500'
-            }`}
-          >
-            {factor}
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-5 text-sm font-medium text-slate-300">Does it spread anywhere? (optional)</p>
+      <p className="mt-6 text-sm font-bold text-ink">
+        Does it spread anywhere? <span className="font-medium text-muted">(optional)</span>
+      </p>
       <input
         type="text"
         value={radiates}
         onChange={(event) => setRadiates(event.target.value)}
         placeholder="e.g. down my right leg"
-        className="mt-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:border-blue-500 focus:outline-none"
+        className="field mt-2 px-3.5 py-2.5 text-sm"
       />
 
-      {error ? <p className="mt-3 text-sm text-rose-400">{error}</p> : null}
+      {error ? (
+        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-danger">
+          {error}
+        </p>
+      ) : null}
 
       <div className="mt-6 flex gap-2">
-        <button
-          type="button"
-          onClick={restart}
-          className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
-        >
+        <button type="button" onClick={restart} className="btn btn-ghost px-4 py-2.5 text-sm">
           Back
         </button>
         <button
           type="button"
           onClick={handleSubmit}
           data-testid="pain-submit"
-          className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+          className="btn btn-primary flex-1 px-4 py-2.5 text-sm"
         >
-          Next
+          Continue →
         </button>
       </div>
 
