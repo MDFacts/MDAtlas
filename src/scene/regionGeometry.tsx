@@ -1,8 +1,10 @@
 import type { BodyPart } from './bodyGeometry'
 
-/** Shared JSX geometry builder for a body part, used by the fallback body and
- * the invisible hit-proxies so both stay in exact spatial agreement. */
-export function geometryFor(part: BodyPart) {
+type ShapeDef = Pick<BodyPart, 'shape' | 'args'>
+
+/** Shared JSX geometry builder for a primitive shape definition, used by the
+ * fallback body and the invisible hit-proxies. */
+export function geometryFor(part: ShapeDef) {
   const args = part.args
   switch (part.shape) {
     case 'sphere':

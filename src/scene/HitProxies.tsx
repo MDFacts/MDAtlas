@@ -1,80 +1,124 @@
 import { useState } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
-import { BODY_PARTS } from './bodyGeometry'
-import type { BodyPart } from './bodyGeometry'
+import { Html } from '@react-three/drei'
+import { regionName } from '../anatomy/anatomyMap'
+import { useAssessmentStore } from '../state/assessmentStore'
+import { FEMALE_HIT_SCALE, HIT_REGIONS } from './hitRegions'
+import type { HitRegion } from './hitRegions'
 import { geometryFor } from './regionGeometry'
 
-interface HitProxyProps {
-  part: BodyPart
-  selected: boolean
+/** Set VITE-free debug via URL: ?debugProxies shows the volumes for calibration. */
+const DEBUG_PROXIES =
+  typeof window !== 'undefined' && window.location.search.includes('debugProxies')
+
+interface HoverState {
+  regionId: string
+  point: { x: number; y: number; z: number }
+}
+
+interface ProxyProps {
+  region: HitRegion
   onSelect: (regionId: string, point: { x: number; y: number; z: number }) => void
+  onHover: (hover: HoverState | null) => void
 }
 
 /**
- * An invisible, raycastable volume over the visible body. Tapping it selects the
- * region; hovering or selecting paints a translucent highlight so the user sees
- * exactly which structure they marked — independent of the underlying mesh.
+ * An invisible raycast volume aligned to the realistic body. Hover feedback is
+ * NOT the volume itself (primitive shapes would clash with the realistic mesh);
+ * instead HitProxies renders a surface glow dot + region label at the pointer.
  */
-function HitProxy({ part, selected, onSelect }: HitProxyProps) {
-  const [hovered, setHovered] = useState(false)
-  const active = hovered || selected
-
+function HitProxy({ region, onSelect, onHover }: ProxyProps) {
   return (
-    <group position={part.position} rotation={part.rotation ?? [0, 0, 0]} scale={part.scale ?? [1, 1, 1]}>
-      <mesh
-        userData={{ regionId: part.regionId }}
-        onPointerDown={(event: ThreeEvent<PointerEvent>) => {
-          event.stopPropagation()
-          onSelect(part.regionId, { x: event.point.x, y: event.point.y, z: event.point.z })
-        }}
-        onPointerOver={(event) => {
-          event.stopPropagation()
-          setHovered(true)
-          document.body.style.cursor = 'pointer'
-        }}
-        onPointerOut={() => {
-          setHovered(false)
-          document.body.style.cursor = 'auto'
-        }}
-      >
-        {geometryFor(part)}
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-      {active ? (
-        <mesh raycast={() => null} scale={1.03}>
-          {geometryFor(part)}
-          <meshStandardMaterial
-            color="#3b82f6"
-            emissive="#2f6fed"
-            emissiveIntensity={selected ? 0.7 : 0.35}
-            transparent
-            opacity={selected ? 0.5 : 0.28}
-            depthWrite={false}
-          />
-        </mesh>
-      ) : null}
-    </group>
+    <mesh
+      userData={{ regionId: region.regionId }}
+      position={region.position}
+      rotation={region.rotation ?? [0, 0, 0]}
+      scale={region.scale ?? [1, 1, 1]}
+      onPointerDown={(event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation()
+        onSelect(region.regionId, { x: event.point.x, y: event.point.y, z: event.point.z })
+      }}
+      onPointerMove={(event: ThreeEvent<PointerEvent>) => {
+        event.stopPropagation()
+        onHover({
+          regionId: region.regionId,
+          point: { x: event.point.x, y: event.point.y, z: event.point.z },
+        })
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation()
+        document.body.style.cursor = 'pointer'
+      }}
+      onPointerOut={() => {
+        onHover(null)
+        document.body.style.cursor = 'auto'
+      }}
+    >
+      {geometryFor(region)}
+      <meshStandardMaterial
+        color="#3b82f6"
+        transparent
+        opacity={DEBUG_PROXIES ? 0.3 : 0}
+        depthWrite={false}
+        wireframe={DEBUG_PROXIES}
+      />
+    </mesh>
   )
 }
 
-/** Only skin-layer parts are tappable — one proxy per selectable region. */
 export function HitProxies({
-  selectedRegionId,
   onSelect,
 }: {
   selectedRegionId: string | null
   onSelect: (regionId: string, point: { x: number; y: number; z: number }) => void
 }) {
+  const bodySex = useAssessmentStore((state) => state.bodySex)
+  const [hover, setHover] = useState<HoverState | null>(null)
+
+  const groupScale = bodySex === 'female' ? FEMALE_HIT_SCALE : 1
+
   return (
-    <group>
-      {BODY_PARTS.filter((part) => part.layer === 'skin').map((part) => (
-        <HitProxy
-          key={part.key}
-          part={part}
-          selected={part.regionId === selectedRegionId}
-          onSelect={onSelect}
-        />
-      ))}
-    </group>
+    <>
+      <group scale={groupScale}>
+        {HIT_REGIONS.map((region) => (
+          <HitProxy key={region.key} region={region} onSelect={onSelect} onHover={setHover} />
+        ))}
+      </group>
+
+      {hover ? (
+        <group position={[hover.point.x, hover.point.y, hover.point.z]}>
+          {/* Soft glow that hugs the model surface at the pointer. */}
+          <mesh raycast={() => null}>
+            <sphereGeometry args={[0.045, 16, 12]} />
+            <meshStandardMaterial
+              color="#3b82f6"
+              emissive="#3b82f6"
+              emissiveIntensity={1.6}
+              transparent
+              opacity={0.85}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh raycast={() => null}>
+            <sphereGeometry args={[0.1, 16, 12]} />
+            <meshStandardMaterial
+              color="#3b82f6"
+              emissive="#2f6fed"
+              emissiveIntensity={0.7}
+              transparent
+              opacity={0.25}
+              depthWrite={false}
+            />
+          </mesh>
+          <Html
+            position={[0.14, 0.1, 0]}
+            className="pointer-events-none select-none whitespace-nowrap rounded-full border border-blue-500/50 bg-slate-950/85 px-2.5 py-1 text-xs text-blue-200 backdrop-blur"
+            zIndexRange={[10, 0]}
+          >
+            {regionName(hover.regionId)}
+          </Html>
+        </group>
+      ) : null}
+    </>
   )
 }
