@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { useAssessmentStore } from '../state/assessmentStore'
 import { BodyErrorBoundary } from './BodyErrorBoundary'
 import { HitProxies } from './HitProxies'
+import { FEMALE_HIT_SCALE } from './hitRegions'
 import { BODY_MODELS } from './modelConfig'
 import { PainMarker } from './PainMarker'
 import { ProceduralBody } from './ProceduralBody'
@@ -18,6 +19,9 @@ export function HumanBody() {
   const modelUrl = BODY_MODELS[bodySex]
   const fallback = <ProceduralBody activeLayer={activeLayer} />
   const showInternalParts = activeLayer !== 'skin'
+  // Internals are laid out on the male envelope; the female shares proportions
+  // at her hit-region scale.
+  const internalScale = bodySex === 'female' ? FEMALE_HIT_SCALE : 1
 
   return (
     <group rotation={[0, backView ? Math.PI : 0, 0]}>
@@ -26,7 +30,11 @@ export function HumanBody() {
         <Suspense fallback={fallback}>
           <RealisticBody url={modelUrl} activeLayer={activeLayer} />
           {/* Internal structures still come from the anatomical primitives. */}
-          {showInternalParts ? <ProceduralBody activeLayer={activeLayer} internalOnly /> : null}
+          {showInternalParts ? (
+            <group scale={internalScale}>
+              <ProceduralBody activeLayer={activeLayer} internalOnly />
+            </group>
+          ) : null}
         </Suspense>
       </BodyErrorBoundary>
 

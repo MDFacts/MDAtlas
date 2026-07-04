@@ -41,11 +41,12 @@ export const HIT_REGIONS: HitRegion[] = [
   region('chest', 'chest', 'cylinder', [0.34, 0.38, 0.42, 24], [0, 2.68, 0], {
     scale: [1, 1, 0.58],
   }),
-  // Solar plexus down to the navel — bottom overlaps the lower-abdomen volumes
-  // so no front ray can slip between them to the back regions.
-  region('upperAbdomen', 'upperAbdomen', 'cylinder', [0.28, 0.32, 0.45, 24], [0, 2.27, 0], {
-    scale: [1, 1, 0.55],
-  }),
+  // Solar plexus down to the navel, tiled into RUQ / epigastric / LUQ. Bottoms
+  // overlap the lower-abdomen volumes so no front ray slips through to the back
+  // regions. Body's right side is −x.
+  region('rightUpperAbdomen', 'rightUpperAbdomen', 'box', [0.24, 0.45, 0.36], [-0.2, 2.27, 0]),
+  region('epigastric', 'epigastric', 'box', [0.2, 0.45, 0.36], [0, 2.27, 0]),
+  region('leftUpperAbdomen', 'leftUpperAbdomen', 'box', [0.24, 0.45, 0.36], [0.2, 2.27, 0]),
   region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [0.19, 16, 12], [-0.14, 1.9, 0.04], {
     scale: [1, 1, 0.55],
   }),

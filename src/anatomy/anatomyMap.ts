@@ -35,10 +35,20 @@ export const ANATOMY_MAP: Record<string, AnatomyRegion> = {
     skeleton: ['Ribs', 'Sternum'],
     organs: ['Heart', 'Lungs', 'Esophagus'],
   }),
-  upperAbdomen: region('upperAbdomen', 'Upper abdomen', 'SCT:41527007', 'midline', {
+  rightUpperAbdomen: region('rightUpperAbdomen', 'Right upper abdomen', 'SCT:50519007', 'right', {
+    skin: ['Right upper quadrant wall'],
+    skeleton: ['Right lower ribs'],
+    organs: ['Liver', 'Gallbladder'],
+  }),
+  epigastric: region('epigastric', 'Upper middle abdomen', 'SCT:27947004', 'midline', {
     skin: ['Epigastric wall'],
-    skeleton: ['Lower ribs'],
-    organs: ['Stomach', 'Liver', 'Pancreas', 'Gallbladder'],
+    skeleton: ['Xiphoid / lower sternum'],
+    organs: ['Stomach', 'Pancreas', 'Duodenum'],
+  }),
+  leftUpperAbdomen: region('leftUpperAbdomen', 'Left upper abdomen', 'SCT:86367003', 'left', {
+    skin: ['Left upper quadrant wall'],
+    skeleton: ['Left lower ribs'],
+    organs: ['Spleen', 'Stomach (fundus)'],
   }),
   rightLowerAbdomen: region('rightLowerAbdomen', 'Right lower abdomen', 'SCT:48544008', 'right', {
     skin: ['Right iliac fossa wall'],

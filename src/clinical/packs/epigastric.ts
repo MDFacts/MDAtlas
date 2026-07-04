@@ -5,22 +5,14 @@ const YES_NO = [
   { value: 'no', label: 'No' },
 ]
 
-export const upperAbdomenPack: ContentPack = {
-  regionId: 'upperAbdomen',
+export const epigastricPack: ContentPack = {
+  regionId: 'epigastric',
   entryNodeId: 'burning',
   nodes: {
     burning: {
       question: {
         id: 'burning',
         text: 'Is it a burning or gnawing pain related to meals?',
-        options: YES_NO,
-      },
-      next: { yes: 'rightSide', no: 'rightSide' },
-    },
-    rightSide: {
-      question: {
-        id: 'rightSide',
-        text: 'Does it sit under the right ribs, especially after fatty meals?',
         options: YES_NO,
       },
       next: { yes: 'radiateBack', no: 'radiateBack' },
@@ -55,11 +47,19 @@ export const upperAbdomenPack: ContentPack = {
         text: 'Have you had heavy alcohol use recently?',
         options: YES_NO,
       },
-      next: { yes: 'chestlike', no: 'chestlike' },
+      next: { yes: 'antacids', no: 'antacids' },
     },
-    chestlike: {
+    antacids: {
       question: {
-        id: 'chestlike',
+        id: 'antacids',
+        text: 'Do antacids make it feel better?',
+        options: YES_NO,
+      },
+      next: { yes: 'chestPressure', no: 'chestPressure' },
+    },
+    chestPressure: {
+      question: {
+        id: 'chestPressure',
         text: 'Do you also feel chest pressure, especially with exertion?',
         options: YES_NO,
       },
@@ -68,37 +68,26 @@ export const upperAbdomenPack: ContentPack = {
   },
   differentials: [
     {
-      id: 'gerd-dyspepsia',
-      name: 'Acid reflux / indigestion',
+      id: 'gerd-epigastric',
+      name: 'Acid reflux (GERD)',
       baseWeight: 1,
-      supports: { burning: ['yes'], stoolDark: ['no'], vomiting: ['no'] },
+      supports: { burning: ['yes'], antacids: ['yes'], radiateBack: ['no'] },
       tier: 'self-care',
       specialty: 'Primary care',
-      suggestedTests: ['Trial of antacids', 'H. pylori test if persistent'],
+      suggestedTests: ['Trial of antacids', 'Endoscopy if persistent'],
       explanation:
-        'Stomach acid irritating the upper gut causes burning discomfort tied to meals. Often improves with smaller meals, less caffeine and alcohol, and antacids.',
+        'Stomach acid irritating the esophagus causes burning discomfort behind the breastbone and upper stomach, usually tied to meals or lying down.',
     },
     {
       id: 'peptic-ulcer',
       name: 'Peptic ulcer',
       baseWeight: 1,
-      supports: { burning: ['yes'], alcohol: ['yes'], vomiting: ['yes'] },
+      supports: { burning: ['yes'], vomiting: ['yes'], alcohol: ['yes'] },
       tier: 'primary-care',
       specialty: 'Gastroenterology',
-      suggestedTests: ['H. pylori test', 'Endoscopy if symptoms persist or bleeding signs'],
+      suggestedTests: ['H. pylori test', 'Endoscopy if persistent or bleeding signs'],
       explanation:
         'A sore in the stomach or duodenal lining causing gnawing pain that changes with eating. Very treatable once identified.',
-    },
-    {
-      id: 'gallstones',
-      name: 'Gallbladder pain (biliary colic)',
-      baseWeight: 1,
-      supports: { rightSide: ['yes'], vomiting: ['yes'], burning: ['no'] },
-      tier: 'primary-care',
-      specialty: 'General surgery / Gastroenterology',
-      suggestedTests: ['Abdominal ultrasound', 'Liver function tests'],
-      explanation:
-        'Gallstones cause waves of pain under the right ribs, classically after rich or fatty meals, sometimes with nausea. Persistent pain with fever needs urgent review.',
     },
     {
       id: 'pancreatitis',
@@ -109,7 +98,18 @@ export const upperAbdomenPack: ContentPack = {
       specialty: 'Emergency medicine / Gastroenterology',
       suggestedTests: ['Lipase blood test', 'Abdominal imaging'],
       explanation:
-        'Inflammation of the pancreas causes severe upper abdominal pain boring through to the back, often with vomiting. It needs same-day medical assessment.',
+        'Inflammation of the pancreas causes severe upper-middle abdominal pain boring through to the back, often with vomiting. It needs same-day assessment.',
+    },
+    {
+      id: 'gastritis',
+      name: 'Stomach lining irritation (gastritis)',
+      baseWeight: 1,
+      supports: { alcohol: ['yes'], burning: ['yes'], antacids: ['yes'] },
+      tier: 'self-care',
+      specialty: 'Primary care',
+      suggestedTests: ['Usually none; H. pylori test if persistent'],
+      explanation:
+        'Alcohol, anti-inflammatory medicines, or infection can inflame the stomach lining, causing burning upper-middle abdominal pain and nausea.',
     },
   ],
   redFlags: [
@@ -121,9 +121,9 @@ export const upperAbdomenPack: ContentPack = {
     },
     {
       id: 'rf-cardiac-mimic',
-      label: 'Upper abdominal pain with chest pressure on exertion — the heart must be checked first',
+      label: 'Upper-middle abdominal pain with chest pressure on exertion — the heart must be checked first',
       tier: 'urgent',
-      when: [{ questionId: 'chestlike', answers: ['yes'] }],
+      when: [{ questionId: 'chestPressure', answers: ['yes'] }],
     },
     {
       id: 'rf-pancreatic',

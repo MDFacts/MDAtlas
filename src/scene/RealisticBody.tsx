@@ -100,7 +100,7 @@ export function RealisticBody({ url, activeLayer }: { url: string; activeLayer: 
           roughness: 0.72,
           metalness: 0.02,
           transparent: ghost,
-          opacity: ghost ? 0.12 : 1,
+          opacity: ghost ? 0.18 : 1,
           depthWrite: !ghost,
         })
         child.castShadow = !ghost

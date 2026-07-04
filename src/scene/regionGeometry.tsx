@@ -16,6 +16,7 @@ export function geometryFor(part: ShapeDef) {
     case 'box':
       return <boxGeometry args={args as [number, number, number]} />
     case 'torus':
-      return <torusGeometry args={args as [number, number, number, number]} />
+      // [radius, tube, radialSegments, tubularSegments, arc?]
+      return <torusGeometry args={args as [number, number, number, number, number]} />
   }
 }

@@ -2,11 +2,13 @@ import { contentPackSchema } from '../contentPackSchema'
 import type { ContentPack } from '../types'
 import { leftArmPack, rightArmPack } from './arm'
 import { chestPack } from './chest'
+import { epigastricPack } from './epigastric'
 import { headPack } from './head'
+import { leftUpperAbdomenPack } from './leftUpperAbdomen'
 import { neckPack } from './neck'
 import { rightLowerAbdomenPack } from './rightLowerAbdomen'
+import { rightUpperAbdomenPack } from './rightUpperAbdomen'
 import { leftShoulderPack, rightShoulderPack } from './shoulder'
-import { upperAbdomenPack } from './upperAbdomen'
 import { upperBackPack } from './upperBack'
 
 function validated(pack: ContentPack): ContentPack {
@@ -18,7 +20,9 @@ export const CONTENT_PACKS: Record<string, ContentPack> = {
   head: validated(headPack),
   neck: validated(neckPack),
   chest: validated(chestPack),
-  upperAbdomen: validated(upperAbdomenPack),
+  rightUpperAbdomen: validated(rightUpperAbdomenPack),
+  epigastric: validated(epigastricPack),
+  leftUpperAbdomen: validated(leftUpperAbdomenPack),
   upperBack: validated(upperBackPack),
   rightLowerAbdomen: validated(rightLowerAbdomenPack),
   leftShoulder: validated(leftShoulderPack),

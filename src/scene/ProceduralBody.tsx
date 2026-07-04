@@ -1,5 +1,6 @@
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
 import { BODY_PARTS } from './bodyGeometry'
+import { ORGAN_PARTS, SKELETON_PARTS } from './internalAnatomy'
 import { geometryFor } from './regionGeometry'
 
 /**
@@ -19,15 +20,15 @@ export function ProceduralBody({
 }) {
   const showSkinGhost = activeLayer !== 'skin'
 
-  const visibleParts = BODY_PARTS.filter((part) => {
-    if (internalOnly) {
-      return part.layer === activeLayer && activeLayer !== 'skin'
-    }
-    if (part.layer === activeLayer) {
-      return true
-    }
-    return part.layer === 'skin' && showSkinGhost
-  })
+  const skinParts = BODY_PARTS.filter((part) => part.layer === 'skin')
+  const internalParts =
+    activeLayer === 'skeleton' ? SKELETON_PARTS : activeLayer === 'organs' ? ORGAN_PARTS : []
+
+  const visibleParts = internalOnly
+    ? internalParts
+    : activeLayer === 'skin'
+      ? skinParts
+      : [...skinParts, ...internalParts]
 
   return (
     <group>
