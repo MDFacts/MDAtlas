@@ -90,8 +90,23 @@ export function RealisticBody({ url, material }: { url: string; material: BodyMa
     if (!Number.isFinite(size.y) || size.y < 1e-3) {
       return
     }
+    // Horizontal centering uses the model's baked root anchor, not the bounding
+    // box: the anchor is the authored midline and is pose-independent, so the
+    // body and skeleton line up even though their bbox centers differ (splayed
+    // skeleton fingers skew the skeleton box). Feet are grounded from the box.
     const center = box.getCenter(new Vector3())
-    cloned.position.set(-center.x, -box.min.y, -center.z)
+    let anchorX = center.x
+    let anchorZ = center.z
+    cloned.updateWorldMatrix(true, true)
+    const inverseRoot = cloned.matrixWorld.clone().invert()
+    cloned.traverse((node) => {
+      if (/Sketchfab_model/i.test(node.name)) {
+        const local = new Vector3().setFromMatrixPosition(node.matrixWorld).applyMatrix4(inverseRoot)
+        anchorX = local.x
+        anchorZ = local.z
+      }
+    })
+    cloned.position.set(-anchorX, -box.min.y, -anchorZ)
     fitted.current = true
   })
 
