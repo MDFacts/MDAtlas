@@ -1,7 +1,12 @@
+import { Suspense } from 'react'
 import { useAssessmentStore } from '../state/assessmentStore'
-import { BODY_PARTS } from './bodyGeometry'
+import { BodyErrorBoundary } from './BodyErrorBoundary'
+import { HitProxies } from './HitProxies'
+import { BODY_MODEL_URL } from './modelConfig'
 import { PainMarker } from './PainMarker'
-import { RegionMesh } from './RegionMesh'
+import { ProceduralBody } from './ProceduralBody'
+import { RealisticBody } from './RealisticBody'
+import { useModelAvailable } from './useModelAvailable'
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
@@ -9,27 +14,27 @@ export function HumanBody() {
   const tapPoint = useAssessmentStore((state) => state.tapPoint)
   const backView = useAssessmentStore((state) => state.backView)
   const selectRegion = useAssessmentStore((state) => state.selectRegion)
+  const modelState = useModelAvailable(BODY_MODEL_URL)
 
-  const showSkinGhost = activeLayer !== 'skin'
-
-  const visibleParts = BODY_PARTS.filter((part) => {
-    if (part.layer === activeLayer) {
-      return true
-    }
-    return part.layer === 'skin' && showSkinGhost
-  })
+  const fallback = <ProceduralBody activeLayer={activeLayer} />
+  const showInternalParts = activeLayer !== 'skin'
+  const useRealistic = modelState === 'available'
 
   return (
     <group rotation={[0, backView ? Math.PI : 0, 0]}>
-      {visibleParts.map((part) => (
-        <RegionMesh
-          key={part.key}
-          part={part}
-          ghosted={part.layer === 'skin' && showSkinGhost}
-          selected={part.regionId === selectedRegionId}
-          onSelect={selectRegion}
-        />
-      ))}
+      {useRealistic ? (
+        <BodyErrorBoundary fallback={fallback}>
+          <Suspense fallback={fallback}>
+            <RealisticBody activeLayer={activeLayer} />
+            {/* Internal structures still come from the anatomical primitives. */}
+            {showInternalParts ? <ProceduralBody activeLayer={activeLayer} internalOnly /> : null}
+          </Suspense>
+        </BodyErrorBoundary>
+      ) : (
+        fallback
+      )}
+
+      <HitProxies selectedRegionId={selectedRegionId} onSelect={selectRegion} />
       {tapPoint ? <PainMarker point={tapPoint} /> : null}
     </group>
   )
