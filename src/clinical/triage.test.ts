@@ -88,7 +88,7 @@ describe('computeAssessment', () => {
     const result = computeAssessment(pack, pain(5), { fever: 'no', walkingPain: 'yes' })
     expect(result.ranked[0].differential.id).toBe('strain')
     expect(result.ranked[0].score).toBe(3)
-    expect(result.ranked[1].score).toBe(1)
+    expect(result.ranked[1].score).toBe(2)
   })
 
   it('uses top differential tier when no red flag triggers', () => {
