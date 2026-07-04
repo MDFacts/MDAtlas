@@ -14,6 +14,12 @@ export const BODY_MODELS = {
 
 export type BodySex = keyof typeof BODY_MODELS
 
+/** Realistic skeleton meshes, authored to overlay the body models. */
+export const SKELETON_MODELS = {
+  male: '/models/skeleton_male.glb',
+  female: '/models/skeleton_female.glb',
+} as const
+
 /** Target standing height in world units — matches the hit-proxy layout. */
 export const BODY_TARGET_HEIGHT = 3.4
 

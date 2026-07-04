@@ -3,10 +3,14 @@ import { useAssessmentStore } from '../state/assessmentStore'
 import { BodyErrorBoundary } from './BodyErrorBoundary'
 import { HitProxies } from './HitProxies'
 import { FEMALE_HIT_SCALE } from './hitRegions'
-import { BODY_MODELS } from './modelConfig'
+import { BODY_MODELS, SKELETON_MODELS } from './modelConfig'
 import { PainMarker } from './PainMarker'
 import { ProceduralBody } from './ProceduralBody'
 import { RealisticBody } from './RealisticBody'
+
+const SKIN_MATERIAL = { color: '#c8b6a6', roughness: 0.72 }
+const SKIN_GHOST_MATERIAL = { color: '#c8b6a6', roughness: 0.72, ghost: true }
+const BONE_MATERIAL = { color: '#e6e1d2', roughness: 0.55, metalness: 0.03 }
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
@@ -17,26 +21,44 @@ export function HumanBody() {
   const selectRegion = useAssessmentStore((state) => state.selectRegion)
 
   const modelUrl = BODY_MODELS[bodySex]
-  const fallback = <ProceduralBody activeLayer={activeLayer} />
-  const showInternalParts = activeLayer !== 'skin'
-  // Internals are laid out on the male envelope; the female shares proportions
-  // at her hit-region scale.
+  const skeletonUrl = SKELETON_MODELS[bodySex]
+  const deeper = activeLayer !== 'skin'
+  const skinFallback = <ProceduralBody activeLayer={activeLayer} />
+  // Primitive internals are laid out on the male envelope; female shares them at
+  // her hit-region scale. Used for organs, and as the skeleton fallback.
   const internalScale = bodySex === 'female' ? FEMALE_HIT_SCALE : 1
 
   return (
     <group rotation={[0, backView ? Math.PI : 0, 0]}>
-      {/* Realistic GLB with a graceful procedural fallback if a model is missing. */}
-      <BodyErrorBoundary key={modelUrl} fallback={fallback}>
-        <Suspense fallback={fallback}>
-          <RealisticBody url={modelUrl} activeLayer={activeLayer} />
-          {/* Internal structures still come from the anatomical primitives. */}
-          {showInternalParts ? (
-            <group scale={internalScale}>
-              <ProceduralBody activeLayer={activeLayer} internalOnly />
-            </group>
-          ) : null}
+      {/* Skin body — solid on the skin layer, ghosted for context under a deeper one. */}
+      <BodyErrorBoundary key={`body-${modelUrl}`} fallback={skinFallback}>
+        <Suspense fallback={skinFallback}>
+          <RealisticBody url={modelUrl} material={deeper ? SKIN_GHOST_MATERIAL : SKIN_MATERIAL} />
         </Suspense>
       </BodyErrorBoundary>
+
+      {/* Realistic skeleton overlay on the skeleton layer. */}
+      {activeLayer === 'skeleton' ? (
+        <BodyErrorBoundary
+          key={`skel-${skeletonUrl}`}
+          fallback={
+            <group scale={internalScale}>
+              <ProceduralBody activeLayer="skeleton" internalOnly />
+            </group>
+          }
+        >
+          <Suspense fallback={null}>
+            <RealisticBody url={skeletonUrl} material={BONE_MATERIAL} />
+          </Suspense>
+        </BodyErrorBoundary>
+      ) : null}
+
+      {/* Organs remain primitive (no organ mesh supplied yet). */}
+      {activeLayer === 'organs' ? (
+        <group scale={internalScale}>
+          <ProceduralBody activeLayer="organs" internalOnly />
+        </group>
+      ) : null}
 
       <HitProxies selectedRegionId={selectedRegionId} onSelect={selectRegion} />
       {tapPoint ? <PainMarker point={tapPoint} /> : null}

@@ -4,17 +4,23 @@ import { useGLTF } from '@react-three/drei'
 import { Box3, Color, Matrix4, Mesh, MeshStandardMaterial, SkinnedMesh, Vector3 } from 'three'
 import type { Group } from 'three'
 import { SkeletonUtils } from 'three-stdlib'
-import type { AnatomyLayer } from '../anatomy/anatomyMap'
 import { BODY_MODEL_SCALE } from './modelConfig'
 
-const SKIN_COLOR = new Color('#c8b6a6')
 const MAX_SAMPLES = 4000
+
+export interface BodyMaterial {
+  color: string
+  roughness: number
+  metalness?: number
+  /** Ghosted = translucent silhouette (used for context under a deeper layer). */
+  ghost?: boolean
+}
 
 /**
  * Bounds of the model as actually posed on screen, measured in `object`'s local
- * space. This must run after a frame has rendered so the skeleton is posed —
- * only then does applyBoneTransform give true positions for skinned meshes.
- * Static meshes fall back to geometry bounds. Vertices are sampled for speed.
+ * space. Must run after a frame has rendered so the skeleton is posed — only
+ * then does applyBoneTransform give true positions for skinned meshes. Static
+ * meshes fall back to geometry bounds. Vertices are sampled for speed.
  */
 function posedBounds(object: Group): Box3 {
   object.updateWorldMatrix(true, true)
@@ -52,13 +58,14 @@ function posedBounds(object: Group): Box3 {
 }
 
 /**
- * Loads and displays a realistic body GLB. The models are pre-normalized to a
- * shared scale, so a single BODY_MODEL_SCALE is applied to the root and only the
- * per-model centering/grounding is measured at runtime (once the pose is live).
- * Applies a soft matte skin material and shadow casting; when a deeper layer is
- * active the body ghosts to a translucent silhouette.
+ * Loads and displays a realistic GLB (skin body or skeleton) that shares the
+ * normalized coordinate space. A single BODY_MODEL_SCALE is applied to the root;
+ * the model is re-centered/grounded from its posed bounds once the pose is live.
+ * Because the body and skeleton share centering and feet, applying this to each
+ * keeps them overlaid. Material is configurable (skin tone vs bone, ghosted or
+ * solid).
  */
-export function RealisticBody({ url, activeLayer }: { url: string; activeLayer: AnatomyLayer }) {
+export function RealisticBody({ url, material }: { url: string; material: BodyMaterial }) {
   const { scene } = useGLTF(url)
   const root = useRef<Group>(null)
   const fitted = useRef(false)
@@ -66,13 +73,11 @@ export function RealisticBody({ url, activeLayer }: { url: string; activeLayer: 
   // SkeletonUtils.clone preserves skinned-mesh bindings that Object3D.clone breaks.
   const cloned = useMemo(() => SkeletonUtils.clone(scene) as Group, [scene])
 
-  // Re-fit whenever the model changes.
   useLayoutEffect(() => {
     fitted.current = false
     cloned.position.set(0, 0, 0)
   }, [cloned])
 
-  // Center horizontally and drop feet to the ground once the skeleton is posed.
   useFrame(() => {
     if (fitted.current) {
       return
@@ -90,15 +95,16 @@ export function RealisticBody({ url, activeLayer }: { url: string; activeLayer: 
     fitted.current = true
   })
 
-  const ghost = activeLayer !== 'skin'
+  const ghost = material.ghost ?? false
+  const color = useMemo(() => new Color(material.color), [material.color])
 
   useLayoutEffect(() => {
     cloned.traverse((child) => {
       if (child instanceof Mesh) {
         child.material = new MeshStandardMaterial({
-          color: SKIN_COLOR,
-          roughness: 0.72,
-          metalness: 0.02,
+          color,
+          roughness: material.roughness,
+          metalness: material.metalness ?? 0.02,
           transparent: ghost,
           opacity: ghost ? 0.18 : 1,
           depthWrite: !ghost,
@@ -108,7 +114,7 @@ export function RealisticBody({ url, activeLayer }: { url: string; activeLayer: 
         child.raycast = () => null // taps handled by hit-proxies
       }
     })
-  }, [cloned, ghost])
+  }, [cloned, ghost, color, material.roughness, material.metalness])
 
   return (
     <group ref={root} scale={BODY_MODEL_SCALE}>
