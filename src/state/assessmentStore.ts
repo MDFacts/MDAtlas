@@ -5,6 +5,7 @@ import { packForRegion } from '../clinical/packs/index'
 import { computeAssessment } from '../clinical/triage'
 import type { AssessmentResult, PainProfile } from '../clinical/types'
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
+import type { BodySex } from '../scene/modelConfig'
 
 export type Phase = 'explore' | 'pain-input' | 'interview' | 'results'
 
@@ -17,6 +18,7 @@ export interface TapPoint {
 interface AssessmentStore {
   phase: Phase
   activeLayer: AnatomyLayer
+  bodySex: BodySex
   selectedRegionId: string | null
   tapPoint: TapPoint | null
   painProfile: PainProfile | null
@@ -24,6 +26,7 @@ interface AssessmentStore {
   result: AssessmentResult | null
   backView: boolean
   setLayer: (layer: AnatomyLayer) => void
+  setBodySex: (sex: BodySex) => void
   toggleView: () => void
   selectRegion: (regionId: string, point: TapPoint) => void
   submitPain: (profile: PainProfile) => void
@@ -44,8 +47,11 @@ const INITIAL = {
 
 export const useAssessmentStore = create<AssessmentStore>((set, get) => ({
   ...INITIAL,
+  bodySex: 'male',
 
   setLayer: (layer) => set({ activeLayer: layer }),
+
+  setBodySex: (sex) => set({ bodySex: sex }),
 
   toggleView: () => set((state) => ({ backView: !state.backView })),
 
