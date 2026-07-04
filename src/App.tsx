@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BodyViewport } from './scene/BodyViewport'
 import { useAssessmentStore } from './state/assessmentStore'
+import { AttributionNote } from './ui/AttributionNote'
 import { Disclaimer } from './ui/Disclaimer'
 import { DoctorReport } from './ui/DoctorReport'
 import { InterviewPanel } from './ui/InterviewPanel'
@@ -80,6 +81,7 @@ export default function App() {
         <section className="relative min-h-[50vh] flex-1">
           <BodyViewport />
           <LayerSwitcher />
+          <AttributionNote />
         </section>
         <aside className="w-full border-t border-slate-800 md:w-[420px] md:border-l md:border-t-0">
           {phase === 'explore' ? <ExplorePanel /> : null}
