@@ -67,9 +67,10 @@ export function PainInputPanel() {
   const regionId = useAssessmentStore((state) => state.selectedRegionId)
   const submitPain = useAssessmentStore((state) => state.submitPain)
   const restart = useAssessmentStore((state) => state.restart)
+  const severity = useAssessmentStore((state) => state.draftSeverity)
+  const setSeverity = useAssessmentStore((state) => state.setDraftSeverity)
 
   const [painTypes, setPainTypes] = useState<PainType[]>([])
-  const [severity, setSeverity] = useState(5)
   const [onset, setOnset] = useState('')
   const [betterFactors, setBetterFactors] = useState<string[]>([])
   const [worseFactors, setWorseFactors] = useState<string[]>([])

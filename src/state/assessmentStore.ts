@@ -25,8 +25,11 @@ interface AssessmentStore {
   interview: InterviewState | null
   result: AssessmentResult | null
   backView: boolean
+  /** Live severity (1–10) while describing pain — drives the pain-marker size. */
+  draftSeverity: number
   setLayer: (layer: AnatomyLayer) => void
   setBodySex: (sex: BodySex) => void
+  setDraftSeverity: (value: number) => void
   toggleView: () => void
   selectRegion: (regionId: string, point: TapPoint) => void
   submitPain: (profile: PainProfile) => void
@@ -43,6 +46,7 @@ const INITIAL = {
   interview: null,
   result: null,
   backView: false,
+  draftSeverity: 5,
 }
 
 export const useAssessmentStore = create<AssessmentStore>((set, get) => ({
@@ -52,6 +56,8 @@ export const useAssessmentStore = create<AssessmentStore>((set, get) => ({
   setLayer: (layer) => set({ activeLayer: layer }),
 
   setBodySex: (sex) => set({ bodySex: sex }),
+
+  setDraftSeverity: (value) => set({ draftSeverity: value }),
 
   toggleView: () => set((state) => ({ backView: !state.backView })),
 
@@ -63,6 +69,7 @@ export const useAssessmentStore = create<AssessmentStore>((set, get) => ({
       painProfile: null,
       interview: null,
       result: null,
+      draftSeverity: 5,
     }),
 
   submitPain: (profile) => {
