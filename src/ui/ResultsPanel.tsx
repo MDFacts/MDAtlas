@@ -51,8 +51,9 @@ export function ResultsPanel({ onOpenReport }: { onOpenReport: () => void }) {
           {selectedRegionId ? regionName(selectedRegionId) : 'This area'}
         </h2>
         <p className="mt-3 text-sm text-slate-400">
-          Guided assessment for this area is coming soon. The current prototype covers the chest,
-          right lower abdomen, and shoulders.
+          Guided assessment for this area is coming soon. The current prototype covers the full
+          head and upper body — head, neck, chest, upper abdomen, upper back, shoulders, arms —
+          plus the right lower abdomen.
         </p>
         <button
           type="button"

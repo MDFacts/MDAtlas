@@ -28,9 +28,10 @@ function ExplorePanel() {
       <div className="mt-5 rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-xs text-slate-500">
         <p className="font-semibold text-slate-400">Guided assessments live in this prototype:</p>
         <ul className="mt-1 list-disc pl-4">
-          <li>Chest</li>
+          <li>Head and neck</li>
+          <li>Chest, upper abdomen, upper back</li>
+          <li>Shoulders and arms</li>
           <li>Right lower abdomen</li>
-          <li>Left / right shoulder</li>
         </ul>
       </div>
       <Disclaimer />
