@@ -46,7 +46,14 @@ function boneGroup(name: string): string | null {
   }
   const node = name.match(/Object_(\d+)/)
   if (node) {
-    return NODE_GROUP[node[1]] ?? null
+    let index = node[1]
+    // The female export appends a 3-digit duplicate suffix to every node
+    // (Object_10 → Object_10001), so the raw index misses the lookup. Strip the
+    // suffix when the full index isn't a known node.
+    if (!(index in NODE_GROUP) && index.length > 3) {
+      index = index.slice(0, -3)
+    }
+    return NODE_GROUP[index] ?? null
   }
   return null
 }

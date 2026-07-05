@@ -269,8 +269,8 @@ export const ORGAN_PARTS: BodyPart[] = [
     args: [96, 0.043, 12],
     position: [0, 0, 0],
     points: [
-      [-0.17, 1.65, -0.01], // cecum
-      [-0.185, 1.77, -0.03], // ascending, low
+      [-0.17, 1.72, -0.01], // cecum
+      [-0.185, 1.82, -0.03], // ascending, low
       [-0.185, 1.97, -0.04], // ascending, high
       [-0.16, 2.13, -0.05], // hepatic flexure
       [-0.08, 2.15, -0.03], // transverse, right
@@ -278,20 +278,20 @@ export const ORGAN_PARTS: BodyPart[] = [
       [0.09, 2.15, -0.03], // transverse, left
       [0.17, 2.14, -0.05], // splenic flexure
       [0.185, 1.95, -0.04], // descending, high
-      [0.18, 1.75, -0.03], // descending, low
-      [0.1, 1.65, -0.01], // sigmoid
-      [0.02, 1.6, -0.02], // sigmoid → rectum
+      [0.18, 1.8, -0.03], // descending, low
+      [0.1, 1.72, -0.01], // sigmoid
+      [0.02, 1.67, -0.02], // sigmoid → rectum
     ],
   },
-  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.61, 0], ORGAN_COL.appendix, {
+  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.7, 0], ORGAN_COL.appendix, {
     rotation: [0, 0, 0.5],
   }),
 
   // Small intestine coils, tucked inside the colon frame
   ...bowelCoils,
 
-  // Pelvis — bladder low behind the pubic bone
-  organ('bladder', 'pelvis', 'Bladder', 'sphere', [0.065, 16, 12], [0, 1.59, -0.01], ORGAN_COL.bladder, {
+  // Pelvis — bladder tucked snugly below the small bowel, behind the pubic bone
+  organ('bladder', 'pelvis', 'Bladder', 'sphere', [0.065, 16, 12], [0, 1.67, -0.01], ORGAN_COL.bladder, {
     scale: [1.05, 0.85, 0.9],
   }),
 ]

@@ -17,10 +17,15 @@ const BONE_MATERIAL = { color: '#f2eee2', roughness: 0.5, metalness: 0.04 }
 // bulging toward the belly.
 const ORGAN_Z_OFFSET = -0.04
 // The skeleton GLB and skin GLB are each centered on their own vertex centroid,
-// but the skeleton's ribcage mass sits forward of the body's centroid, leaving
-// it ~0.067 too far forward. Shift it back to align the two depth midpoints
-// (even tissue margin front and back).
-const SKELETON_Z_OFFSET = -0.066
+// but the skeleton's ribcage mass sits forward of the body's centroid, so it
+// lands too far forward. Shift it back to align the two depth midpoints (even
+// tissue margin front and back). The two exports differ in depth, so the offset
+// is measured per sex: male body/skel midpoints −0.029/+0.038 → −0.066; female
+// −0.034/−0.019 → −0.015.
+const SKELETON_Z_OFFSET: Record<'male' | 'female', number> = {
+  male: -0.066,
+  female: -0.015,
+}
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
@@ -58,7 +63,7 @@ export function HumanBody() {
           }
         >
           <Suspense fallback={null}>
-            <group position={[0, 0, SKELETON_Z_OFFSET]}>
+            <group position={[0, 0, SKELETON_Z_OFFSET[bodySex]]}>
               <RealisticBody
                 url={skeletonUrl}
                 material={BONE_MATERIAL}
