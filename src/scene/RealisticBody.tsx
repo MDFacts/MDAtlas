@@ -91,7 +91,7 @@ export function RealisticBody({
   material: BodyMaterial
   /** When set, sub-meshes stay raycastable and report this label on hover
    * (used to name bones on the skeleton layer). */
-  hoverLabelFor?: (name: string) => string | null
+  hoverLabelFor?: (name: string, point: { x: number; y: number }) => string | null
   /** Maps a clicked sub-mesh to an assessment region (skeleton layer). */
   regionFor?: (name: string, point: { x: number; y: number }) => string | null
   onSelect?: (regionId: string, point: { x: number; y: number; z: number }) => void
@@ -163,7 +163,7 @@ export function RealisticBody({
       onPointerMove={
         hoverLabelFor
           ? (event) => {
-              const label = hoverLabelFor(event.object.name)
+              const label = hoverLabelFor(event.object.name, { x: event.point.x, y: event.point.y })
               if (label) {
                 event.stopPropagation()
                 setHover(label, { x: event.point.x, y: event.point.y, z: event.point.z }, 'bone')

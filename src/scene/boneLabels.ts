@@ -51,9 +51,41 @@ function boneGroup(name: string): string | null {
   return null
 }
 
-export function boneLabel(name: string): string | null {
+/** Body's left is +x, right is −x. */
+function side(x: number): string {
+  return x > 0 ? 'Left' : 'Right'
+}
+
+// The GLB merges every arm/hand bone into one mesh and every hip/leg bone into
+// another, so the specific bone is resolved from the hover point's height in the
+// ~3.4-unit envelope (shoulder ≈2.78, elbow ≈2.05, wrist ≈1.5; hip ≈1.55,
+// knee ≈0.9, ankle ≈0.15).
+function armBoneLabel(p: { x: number; y: number }): string {
+  const s = side(p.x)
+  if (p.y > 2.05) return `${s} humerus (upper arm)`
+  if (p.y > 1.5) return `${s} forearm (radius & ulna)`
+  return `${s} hand (carpals & fingers)`
+}
+
+function legBoneLabel(p: { x: number; y: number }): string {
+  const s = side(p.x)
+  if (p.y > 1.5) return `${s} hip bone (ilium)`
+  if (p.y > 0.98) return `${s} femur (thigh)`
+  if (p.y > 0.84) return `${s} patella (kneecap)`
+  if (p.y > 0.16) return `${s} tibia & fibula (shin)`
+  return `${s} foot bones`
+}
+
+export function boneLabel(name: string, point?: { x: number; y: number }): string | null {
   const group = boneGroup(name)
-  return group ? (GROUP_LABELS[group] ?? group) : null
+  if (!group) {
+    return null
+  }
+  if (point) {
+    if (group === 'armshands') return armBoneLabel(point)
+    if (group === 'hipslegs') return legBoneLabel(point)
+  }
+  return GROUP_LABELS[group] ?? group
 }
 
 /** Map a clicked bone to the assessment region it belongs to, so tapping a bone
