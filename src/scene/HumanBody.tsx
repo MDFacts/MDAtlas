@@ -16,6 +16,11 @@ const BONE_MATERIAL = { color: '#f2eee2', roughness: 0.5, metalness: 0.04 }
 // Nudge the whole organ group back so it nests inside the torso rather than
 // bulging toward the belly.
 const ORGAN_Z_OFFSET = -0.04
+// The skeleton GLB and skin GLB are each centered on their own vertex centroid,
+// but the skeleton's ribcage mass sits forward of the body's centroid, leaving
+// it ~0.067 too far forward. Shift it back to align the two depth midpoints
+// (even tissue margin front and back).
+const SKELETON_Z_OFFSET = -0.066
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
@@ -53,13 +58,15 @@ export function HumanBody() {
           }
         >
           <Suspense fallback={null}>
-            <RealisticBody
-              url={skeletonUrl}
-              material={BONE_MATERIAL}
-              hoverLabelFor={boneLabel}
-              regionFor={regionForBone}
-              onSelect={selectRegion}
-            />
+            <group position={[0, 0, SKELETON_Z_OFFSET]}>
+              <RealisticBody
+                url={skeletonUrl}
+                material={BONE_MATERIAL}
+                hoverLabelFor={boneLabel}
+                regionFor={regionForBone}
+                onSelect={selectRegion}
+              />
+            </group>
           </Suspense>
         </BodyErrorBoundary>
       ) : null}
