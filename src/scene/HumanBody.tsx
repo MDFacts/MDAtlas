@@ -13,6 +13,9 @@ import { RealisticBody } from './RealisticBody'
 const SKIN_MATERIAL = { color: '#d9c3b0', roughness: 0.7 }
 const SKIN_GHOST_MATERIAL = { color: '#8ba6c8', roughness: 0.6, ghost: true }
 const BONE_MATERIAL = { color: '#f2eee2', roughness: 0.5, metalness: 0.04 }
+// Nudge the whole organ group back so it nests inside the torso rather than
+// bulging toward the belly.
+const ORGAN_Z_OFFSET = -0.04
 
 export function HumanBody() {
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
@@ -64,7 +67,7 @@ export function HumanBody() {
       {/* Organs remain primitive (no organ mesh supplied yet) — interactive so
           each organ names itself on hover and taps start an assessment. */}
       {activeLayer === 'organs' ? (
-        <group scale={internalScale}>
+        <group scale={internalScale} position={[0, 0, ORGAN_Z_OFFSET]}>
           <ProceduralBody activeLayer="organs" internalOnly interactive onSelect={selectRegion} />
         </group>
       ) : null}
