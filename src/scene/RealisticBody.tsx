@@ -4,6 +4,7 @@ import { useGLTF } from '@react-three/drei'
 import { Box3, Color, Matrix4, Mesh, MeshStandardMaterial, SkinnedMesh, Vector3 } from 'three'
 import type { Group } from 'three'
 import { SkeletonUtils } from 'three-stdlib'
+import { useHoverStore } from './hoverStore'
 import { BODY_MODEL_SCALE } from './modelConfig'
 
 const MAX_SAMPLES = 4000
@@ -79,10 +80,28 @@ function posedBounds(object: Group): PosedBounds {
  * keeps them overlaid. Material is configurable (skin tone vs bone, ghosted or
  * solid).
  */
-export function RealisticBody({ url, material }: { url: string; material: BodyMaterial }) {
+export function RealisticBody({
+  url,
+  material,
+  hoverLabelFor,
+  regionFor,
+  onSelect,
+}: {
+  url: string
+  material: BodyMaterial
+  /** When set, sub-meshes stay raycastable and report this label on hover
+   * (used to name bones on the skeleton layer). */
+  hoverLabelFor?: (name: string) => string | null
+  /** Maps a clicked sub-mesh to an assessment region (skeleton layer). */
+  regionFor?: (name: string, point: { x: number; y: number }) => string | null
+  onSelect?: (regionId: string, point: { x: number; y: number; z: number }) => void
+}) {
   const { scene } = useGLTF(url)
   const root = useRef<Group>(null)
   const fitted = useRef(false)
+  const setHover = useHoverStore((state) => state.setHover)
+  const clearHover = useHoverStore((state) => state.clearHover)
+  const interactive = !!hoverLabelFor
 
   // SkeletonUtils.clone preserves skinned-mesh bindings that Object3D.clone breaks.
   const cloned = useMemo(() => SkeletonUtils.clone(scene) as Group, [scene])
@@ -128,13 +147,43 @@ export function RealisticBody({ url, material }: { url: string; material: BodyMa
         })
         child.castShadow = !ghost
         child.receiveShadow = !ghost
-        child.raycast = () => null // taps handled by hit-proxies
+        // Interactive (skeleton) keeps raycast so bones can be named on hover;
+        // otherwise taps are handled by the hit-proxies.
+        if (!interactive) {
+          child.raycast = () => null
+        }
       }
     })
-  }, [cloned, ghost, color, material.roughness, material.metalness])
+  }, [cloned, ghost, color, material.roughness, material.metalness, interactive])
 
   return (
-    <group ref={root} scale={BODY_MODEL_SCALE}>
+    <group
+      ref={root}
+      scale={BODY_MODEL_SCALE}
+      onPointerMove={
+        hoverLabelFor
+          ? (event) => {
+              const label = hoverLabelFor(event.object.name)
+              if (label) {
+                event.stopPropagation()
+                setHover(label, { x: event.point.x, y: event.point.y, z: event.point.z }, 'bone')
+              }
+            }
+          : undefined
+      }
+      onPointerOut={hoverLabelFor ? () => clearHover('bone') : undefined}
+      onPointerDown={
+        regionFor && onSelect
+          ? (event) => {
+              const region = regionFor(event.object.name, { x: event.point.x, y: event.point.y })
+              if (region) {
+                event.stopPropagation()
+                onSelect(region, { x: event.point.x, y: event.point.y, z: event.point.z })
+              }
+            }
+          : undefined
+      }
+    >
       <primitive object={cloned} />
     </group>
   )

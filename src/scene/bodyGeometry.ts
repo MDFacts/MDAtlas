@@ -13,6 +13,8 @@ export interface BodyPart {
   rotation?: [number, number, number]
   scale?: [number, number, number]
   color: string
+  /** Human-readable name shown on hover (organs/skeleton layers). */
+  label?: string
 }
 
 const SKIN = '#c9d4e4'

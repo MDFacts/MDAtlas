@@ -1,8 +1,10 @@
 import { Suspense } from 'react'
 import { useAssessmentStore } from '../state/assessmentStore'
+import { boneLabel, regionForBone } from './boneLabels'
 import { BodyErrorBoundary } from './BodyErrorBoundary'
 import { HitProxies } from './HitProxies'
 import { FEMALE_HIT_SCALE } from './hitRegions'
+import { HoverChip } from './HoverChip'
 import { BODY_MODELS, SKELETON_MODELS } from './modelConfig'
 import { PainMarker } from './PainMarker'
 import { ProceduralBody } from './ProceduralBody'
@@ -48,20 +50,28 @@ export function HumanBody() {
           }
         >
           <Suspense fallback={null}>
-            <RealisticBody url={skeletonUrl} material={BONE_MATERIAL} />
+            <RealisticBody
+              url={skeletonUrl}
+              material={BONE_MATERIAL}
+              hoverLabelFor={boneLabel}
+              regionFor={regionForBone}
+              onSelect={selectRegion}
+            />
           </Suspense>
         </BodyErrorBoundary>
       ) : null}
 
-      {/* Organs remain primitive (no organ mesh supplied yet). */}
+      {/* Organs remain primitive (no organ mesh supplied yet) — interactive so
+          each organ names itself on hover and taps start an assessment. */}
       {activeLayer === 'organs' ? (
         <group scale={internalScale}>
-          <ProceduralBody activeLayer="organs" internalOnly />
+          <ProceduralBody activeLayer="organs" internalOnly interactive onSelect={selectRegion} />
         </group>
       ) : null}
 
       <HitProxies selectedRegionId={selectedRegionId} onSelect={selectRegion} />
       {tapPoint ? <PainMarker point={tapPoint} /> : null}
+      <HoverChip />
     </group>
   )
 }
