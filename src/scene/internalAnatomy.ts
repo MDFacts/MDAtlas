@@ -257,20 +257,33 @@ export const ORGAN_PARTS: BodyPart[] = [
     rotation: [0, 0, 0.18],
   }),
 
-  // Large intestine — a frame around the small bowel:
+  // Large intestine — one continuous tube framing the small bowel:
   // cecum → ascending (right) → transverse (across) → descending (left) → sigmoid.
-  organ('cecum', 'rightLowerAbdomen', 'Large intestine', 'sphere', [0.052, 14, 12], [-0.17, 1.57, -0.02], ORGAN_COL.colon, {
-    scale: [1, 1.1, 0.9],
-  }),
-  organ('colonAscending', 'rightLowerAbdomen', 'Large intestine', 'capsule', [0.04, 0.28, 8, 12], [-0.175, 1.8, -0.03], ORGAN_COL.colon),
-  organ('colonTransverse', 'epigastric', 'Large intestine', 'capsule', [0.04, 0.28, 8, 12], [0, 1.98, -0.02], ORGAN_COL.colon, {
-    rotation: [0, 0, Math.PI / 2],
-  }),
-  organ('colonDescending', 'leftLowerAbdomen', 'Large intestine', 'capsule', [0.038, 0.28, 8, 12], [0.175, 1.78, -0.03], ORGAN_COL.colon),
-  organ('colonSigmoid', 'pelvis', 'Large intestine', 'capsule', [0.036, 0.11, 8, 12], [0.07, 1.54, 0.0], ORGAN_COL.colon, {
-    rotation: [0.3, 0, 0.9],
-  }),
-  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.47, 0.0], ORGAN_COL.appendix, {
+  {
+    key: 'colon',
+    regionId: 'leftLowerAbdomen',
+    layer: 'organs',
+    label: 'Large intestine',
+    color: ORGAN_COL.colon,
+    shape: 'tube',
+    args: [96, 0.043, 12],
+    position: [0, 0, 0],
+    points: [
+      [-0.17, 1.5, -0.01], // cecum
+      [-0.185, 1.62, -0.03], // ascending, low
+      [-0.185, 1.82, -0.04], // ascending, high
+      [-0.16, 1.98, -0.05], // hepatic flexure
+      [-0.08, 2.0, -0.03], // transverse, right
+      [0, 1.96, -0.02], // transverse, mid (dips forward)
+      [0.09, 2.0, -0.03], // transverse, left
+      [0.17, 1.99, -0.05], // splenic flexure
+      [0.185, 1.8, -0.04], // descending, high
+      [0.18, 1.6, -0.03], // descending, low
+      [0.1, 1.5, -0.01], // sigmoid
+      [0.02, 1.45, -0.02], // sigmoid → rectum
+    ],
+  },
+  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.44, 0.0], ORGAN_COL.appendix, {
     rotation: [0, 0, 0.5],
   }),
 

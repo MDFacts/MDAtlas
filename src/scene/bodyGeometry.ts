@@ -1,13 +1,14 @@
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
 
-export type PartShape = 'sphere' | 'cylinder' | 'capsule' | 'box' | 'torus'
+export type PartShape = 'sphere' | 'cylinder' | 'capsule' | 'box' | 'torus' | 'tube'
 
 export interface BodyPart {
   key: string
   regionId: string
   layer: AnatomyLayer
   shape: PartShape
-  /** Geometry args in three.js constructor order for the shape. */
+  /** Geometry args in three.js constructor order for the shape. For 'tube':
+   * [tubularSegments, radius, radialSegments]. */
   args: number[]
   position: [number, number, number]
   rotation?: [number, number, number]
@@ -15,6 +16,8 @@ export interface BodyPart {
   color: string
   /** Human-readable name shown on hover (organs/skeleton layers). */
   label?: string
+  /** Control points for a 'tube' shape — a smooth spline is fit through them. */
+  points?: [number, number, number][]
 }
 
 const SKIN = '#c9d4e4'
