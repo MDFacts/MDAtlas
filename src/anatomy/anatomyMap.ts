@@ -63,7 +63,12 @@ export const ANATOMY_MAP: Record<string, AnatomyRegion> = {
   pelvis: region('pelvis', 'Pelvis', 'SCT:12921003', 'midline', {
     skin: ['Suprapubic wall'],
     skeleton: ['Pelvic bones'],
-    organs: ['Bladder', 'Reproductive organs'],
+    organs: ['Bladder'],
+  }),
+  genitals: region('genitals', 'Genital area', 'SCT:71934003', 'midline', {
+    skin: ['Groin', 'External genitalia'],
+    skeleton: ['Pubic symphysis'],
+    organs: ['Reproductive organs'],
   }),
   leftShoulder: region('leftShoulder', 'Left shoulder', 'SCT:91775009', 'left', {
     skin: ['Left deltoid area'],

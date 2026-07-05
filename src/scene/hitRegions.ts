@@ -53,8 +53,13 @@ export const HIT_REGIONS: HitRegion[] = [
   region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [0.19, 16, 12], [0.14, 1.9, 0.04], {
     scale: [1, 1, 0.55],
   }),
-  region('pelvis', 'pelvis', 'cylinder', [0.3, 0.26, 0.36, 24], [0, 1.6, 0], {
+  // Pelvis = the lower-abdomen/hip bowl; genitals = the groin below the pubic
+  // bone (a distinct zone).
+  region('pelvis', 'pelvis', 'cylinder', [0.3, 0.26, 0.26, 24], [0, 1.67, 0], {
     scale: [1, 1, 0.6],
+  }),
+  region('genitals', 'genitals', 'sphere', [0.12, 16, 12], [0, 1.43, 0.05], {
+    scale: [1, 0.85, 0.7],
   }),
   region('rightShoulder', 'rightShoulder', 'sphere', [0.17, 16, 12], [-0.38, 2.8, 0]),
   region('leftShoulder', 'leftShoulder', 'sphere', [0.17, 16, 12], [0.38, 2.8, 0]),
