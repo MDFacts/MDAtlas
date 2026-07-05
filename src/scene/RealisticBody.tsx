@@ -16,16 +16,26 @@ export interface BodyMaterial {
   ghost?: boolean
 }
 
+interface PosedBounds {
+  box: Box3
+  /** Mean of sampled posed vertices — the horizontal midline for a symmetric
+   * body, robust to asymmetric finger splay (unlike the bbox min/max center)
+   * and to a root anchor that isn't on the mesh's true midline. */
+  centroid: Vector3
+}
+
 /**
  * Bounds of the model as actually posed on screen, measured in `object`'s local
  * space. Must run after a frame has rendered so the skeleton is posed — only
  * then does applyBoneTransform give true positions for skinned meshes. Static
  * meshes fall back to geometry bounds. Vertices are sampled for speed.
  */
-function posedBounds(object: Group): Box3 {
+function posedBounds(object: Group): PosedBounds {
   object.updateWorldMatrix(true, true)
   const inverseRoot = object.matrixWorld.clone().invert()
   const box = new Box3()
+  const sum = new Vector3()
+  let count = 0
   const relative = new Matrix4()
   const vertex = new Vector3()
 
@@ -45,6 +55,8 @@ function posedBounds(object: Group): Box3 {
         skinned.applyBoneTransform(i, vertex)
         vertex.applyMatrix4(relative)
         box.expandByPoint(vertex)
+        sum.add(vertex)
+        count += 1
       }
     } else {
       mesh.geometry.computeBoundingBox()
@@ -54,7 +66,9 @@ function posedBounds(object: Group): Box3 {
       }
     }
   })
-  return box
+
+  const centroid = count > 0 ? sum.divideScalar(count) : box.getCenter(new Vector3())
+  return { box, centroid }
 }
 
 /**
@@ -82,7 +96,7 @@ export function RealisticBody({ url, material }: { url: string; material: BodyMa
     if (fitted.current) {
       return
     }
-    const box = posedBounds(cloned)
+    const { box, centroid } = posedBounds(cloned)
     if (box.isEmpty()) {
       return
     }
@@ -90,23 +104,11 @@ export function RealisticBody({ url, material }: { url: string; material: BodyMa
     if (!Number.isFinite(size.y) || size.y < 1e-3) {
       return
     }
-    // Horizontal centering uses the model's baked root anchor, not the bounding
-    // box: the anchor is the authored midline and is pose-independent, so the
-    // body and skeleton line up even though their bbox centers differ (splayed
-    // skeleton fingers skew the skeleton box). Feet are grounded from the box.
-    const center = box.getCenter(new Vector3())
-    let anchorX = center.x
-    let anchorZ = center.z
-    cloned.updateWorldMatrix(true, true)
-    const inverseRoot = cloned.matrixWorld.clone().invert()
-    cloned.traverse((node) => {
-      if (/Sketchfab_model/i.test(node.name)) {
-        const local = new Vector3().setFromMatrixPosition(node.matrixWorld).applyMatrix4(inverseRoot)
-        anchorX = local.x
-        anchorZ = local.z
-      }
-    })
-    cloned.position.set(-anchorX, -box.min.y, -anchorZ)
+    // Horizontal centering uses the vertex centroid (the true midline of a
+    // symmetric body), not the root anchor — some exports place the root off the
+    // mesh midline. Feet are grounded from the box. Body and skeleton share a
+    // midline, so both centre on 0 and stay overlaid.
+    cloned.position.set(-centroid.x, -box.min.y, -centroid.z)
     fitted.current = true
   })
 
