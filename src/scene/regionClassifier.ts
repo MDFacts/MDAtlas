@@ -23,7 +23,9 @@ export interface RegionBounds {
   pecBottom: number
   /** The navel: upper ↔ lower abdomen boundary. */
   navel: number
-  /** The pubic bone: lower-abdomen ↔ pelvis boundary. */
+  /** Top of the pelvic region (≈ iliac line): lower-abdomen ↔ pelvis boundary. */
+  pelvisTop: number
+  /** The pubic bone: bottom of the pelvis band; the genital band sits below it. */
   pubic: number
   /** Top of the legs (the crotch); below this is legs. */
   crotch: number
@@ -36,8 +38,11 @@ export interface RegionBounds {
   armMinX: number
   /** |x| beyond this at shoulder height is the shoulder ball. */
   shoulderMinX: number
-  /** z behind this is the back surface. */
+  /** z behind this is the back surface… */
   backMaxZ: number
+  /** …but only within this half-width of the spine — the torso's SIDE surface
+   * (armpit, flank) also curves behind the z-centroid and must not read as back. */
+  backHalfW: number
 }
 
 /**
@@ -56,6 +61,7 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     shoulderTop: 2.77,
     pecBottom: 2.39,
     navel: 2.1,
+    pelvisTop: 1.9,
     pubic: 1.74,
     crotch: 1.52,
     genitalTop: 1.72,
@@ -64,12 +70,14 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     armMinX: 0.45,
     shoulderMinX: 0.28,
     backMaxZ: -0.1,
+    backHalfW: 0.32,
   },
   female: {
     neckTop: 2.76,
     shoulderTop: 2.54,
     pecBottom: 2.2,
-    navel: 1.9,
+    navel: 1.94,
+    pelvisTop: 1.83,
     pubic: 1.7,
     crotch: 1.53,
     genitalTop: 1.68,
@@ -78,6 +86,7 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     armMinX: 0.42,
     shoulderMinX: 0.26,
     backMaxZ: -0.1,
+    backHalfW: 0.3,
   },
 }
 
@@ -105,8 +114,9 @@ export function classifyRegion(point: Point3, sex: BodySex): string {
     return 'neck'
   }
 
-  // Back surface (torso only — legs/arms handled by their own bands).
-  if (z < B.backMaxZ && y > B.crotch) {
+  // Back surface — torso only, and only near the spine: the torso's SIDE (armpit,
+  // flank) also curves behind the z-centroid and must stay chest/abdomen.
+  if (z < B.backMaxZ && ax < B.backHalfW && y > B.crotch) {
     if (y > B.pecBottom) return 'upperBack'
     if (y > B.pubic) return 'lowerBack'
     return 'pelvis' // gluteal region
@@ -119,9 +129,11 @@ export function classifyRegion(point: Point3, sex: BodySex): string {
     if (x > 0.09) return 'leftUpperAbdomen'
     return 'epigastric'
   }
-  if (y > B.pubic) {
+  if (y > B.pelvisTop) {
     return left ? 'leftLowerAbdomen' : 'rightLowerAbdomen'
   }
+  // Pelvis band: iliac line down to the pubic bone, full width.
+  if (y > B.pubic) return 'pelvis'
 
   // External genitalia: a narrow central band on the FRONT of the pubis. The
   // surface there can dip slightly behind the body's z-centroid (measured down

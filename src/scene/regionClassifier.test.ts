@@ -15,9 +15,10 @@ describe('classifyRegion', () => {
       expect(classifyRegion(front((B.neckTop + B.shoulderTop) / 2), sex)).toBe('neck')
       expect(classifyRegion(front((B.shoulderTop + B.pecBottom) / 2), sex)).toBe('chest')
       expect(classifyRegion(front((B.pecBottom + B.navel) / 2), sex)).toBe('epigastric')
-      expect(classifyRegion(front((B.navel + B.pubic) / 2), sex)).toBe('rightLowerAbdomen')
-      // Between pubic bone and the genital band → pelvis (suprapubic).
-      expect(classifyRegion(front(B.pubic - 0.01), sex)).toBe('pelvis')
+      expect(classifyRegion(front((B.navel + B.pelvisTop) / 2), sex)).toBe('rightLowerAbdomen')
+      // Pelvis is a real band (iliac line → pubic bone), not a sliver.
+      expect(classifyRegion(front((B.pelvisTop + B.pubic) / 2), sex)).toBe('pelvis')
+      expect(B.pelvisTop - B.pubic).toBeGreaterThanOrEqual(0.1)
       // Genital band on the front midline.
       expect(classifyRegion(front((B.genitalTop + B.genitalBottom) / 2), sex)).toBe('genitals')
     }
@@ -31,6 +32,17 @@ describe('classifyRegion', () => {
         expect(region).not.toBe('lowerBack')
         expect(region).not.toBe('upperBack')
       }
+    }
+  })
+
+  it('keeps the armpit / torso side out of the back regions', () => {
+    for (const sex of SEXES) {
+      const B = REGION_BOUNDS[sex]
+      // Lateral chest surface at the armpit curves behind the z-centroid but
+      // must read as chest, never upper back.
+      const armpit = { x: B.armMinX - 0.05, y: (B.shoulderTop + B.pecBottom) / 2, z: -0.2 }
+      expect(classifyRegion(armpit, sex)).toBe('chest')
+      expect(classifyRegion({ ...armpit, x: -armpit.x }, sex)).toBe('chest')
     }
   })
 
