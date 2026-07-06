@@ -41,19 +41,25 @@ export interface RegionBounds {
 }
 
 /**
- * Boundaries read off each rendered model against world-height reference lines
- * and confirmed by tap-point readback. Male ≈3.47 tall, female ≈3.17.
+ * Boundaries MEASURED off each mesh's geometry (not eyeballed):
+ *  - crotch = the height where the inter-leg gap closes (midline occupancy scan);
+ *  - genital band = the dense forward vertex cluster just above the crotch
+ *    (frontal-z bulge scan near the midline);
+ *  - pubic bone = just above the genital band (matches anthropometric ≈0.51×H);
+ *  - navel ≈0.60×H and pec/bust line ≈0.69×H (standard proportions on this
+ *    normalized rig), chin ≈0.87×H.
+ * Male H≈3.47, female H≈3.17.
  */
 export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
   male: {
     neckTop: 3.02,
-    shoulderTop: 2.72,
-    pecBottom: 2.35,
-    navel: 1.92,
-    pubic: 1.55,
-    crotch: 1.42,
-    genitalTop: 1.5,
-    genitalBottom: 1.26,
+    shoulderTop: 2.77,
+    pecBottom: 2.39,
+    navel: 2.1,
+    pubic: 1.74,
+    crotch: 1.52,
+    genitalTop: 1.72,
+    genitalBottom: 1.52,
     genitalHalfW: 0.1,
     armMinX: 0.45,
     shoulderMinX: 0.28,
@@ -61,13 +67,13 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
   },
   female: {
     neckTop: 2.76,
-    shoulderTop: 2.48,
-    pecBottom: 2.18,
-    navel: 1.82,
-    pubic: 1.48,
-    crotch: 1.34,
-    genitalTop: 1.44,
-    genitalBottom: 1.2,
+    shoulderTop: 2.54,
+    pecBottom: 2.2,
+    navel: 1.9,
+    pubic: 1.7,
+    crotch: 1.53,
+    genitalTop: 1.68,
+    genitalBottom: 1.53,
     genitalHalfW: 0.09,
     armMinX: 0.42,
     shoulderMinX: 0.26,
@@ -117,8 +123,10 @@ export function classifyRegion(point: Point3, sex: BodySex): string {
     return left ? 'leftLowerAbdomen' : 'rightLowerAbdomen'
   }
 
-  // External genitalia: a narrow central band on the FRONT of the pubis.
-  if (y > B.genitalBottom && y <= B.genitalTop && ax < B.genitalHalfW && z > 0) {
+  // External genitalia: a narrow central band on the FRONT of the pubis. The
+  // surface there can dip slightly behind the body's z-centroid (measured down
+  // to z≈−0.01 on the male), so "front" is anything clearly ahead of the back.
+  if (y > B.genitalBottom && y <= B.genitalTop && ax < B.genitalHalfW && z > -0.05) {
     return 'genitals'
   }
   if (y > B.crotch) return 'pelvis'
