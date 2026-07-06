@@ -1,4 +1,5 @@
 import type { ThreeEvent } from '@react-three/fiber'
+import { Mesh } from 'three'
 import { regionName } from '../anatomy/anatomyMap'
 import { useAssessmentStore } from '../state/assessmentStore'
 import { FEMALE_HIT_SCALE, HIT_REGIONS } from './hitRegions'
@@ -34,7 +35,7 @@ function HitProxy({ region, hoverEnabled, onSelect }: ProxyProps) {
       position={region.position}
       rotation={region.rotation ?? [0, 0, 0]}
       scale={region.scale ?? [1, 1, 1]}
-      raycast={hoverEnabled ? undefined : noRaycast}
+      raycast={hoverEnabled ? meshRaycast : noRaycast}
       onPointerDown={(event: ThreeEvent<PointerEvent>) => {
         event.stopPropagation()
         onSelect(region.regionId, { x: event.point.x, y: event.point.y, z: event.point.z })
@@ -77,6 +78,13 @@ function HitProxy({ region, hoverEnabled, onSelect }: ProxyProps) {
 /** No-op raycast: keeps the proxy out of the intersection set entirely so it
  * can't block hover/clicks on the organ or bone meshes behind it. */
 const noRaycast = () => null
+
+/** The real mesh raycast, assigned explicitly when the proxy should be tappable.
+ * We must NOT pass `undefined` to re-enable it: R3F does not restore the default
+ * raycast when a prop goes from `noRaycast` back to `undefined`, so the proxy
+ * would stay un-raycastable after visiting a deeper layer and returning to skin
+ * (taps silently miss). Assigning the prototype method guarantees restoration. */
+const meshRaycast = Mesh.prototype.raycast
 
 export function HitProxies({
   onSelect,
