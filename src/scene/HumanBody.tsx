@@ -24,6 +24,12 @@ const ORGAN_Z_OFFSET: Record<'male' | 'female', number> = {
   male: -0.04,
   female: 0.025,
 }
+// Female organs are the (larger) male layout at FEMALE_HIT_SCALE. Trim every
+// organ but the brain to an effective 0.85 (0.85 / FEMALE_HIT_SCALE cancels the
+// group scale), leaving the brain full-size, and lift the bladder so it clears
+// the groin. Male is untouched (scale 1, no lift).
+const FEMALE_ORGAN_SIZE = 0.85 / FEMALE_HIT_SCALE
+const FEMALE_PART_LIFT = { bladder: 0.09 }
 // The skeleton GLB and skin GLB are each centered on their own vertex centroid,
 // but the skeleton's ribcage mass sits forward of the body's centroid, so it
 // lands too far forward. Shift it back to align the two depth midpoints (even
@@ -119,7 +125,14 @@ export function HumanBody() {
           each organ names itself on hover and taps start an assessment. */}
       {activeLayer === 'organs' ? (
         <group scale={internalScale} position={[0, 0, ORGAN_Z_OFFSET[bodySex]]}>
-          <ProceduralBody activeLayer="organs" internalOnly interactive onSelect={selectRegion} />
+          <ProceduralBody
+            activeLayer="organs"
+            internalOnly
+            interactive
+            onSelect={selectRegion}
+            organSizeScale={bodySex === 'female' ? FEMALE_ORGAN_SIZE : 1}
+            partLift={bodySex === 'female' ? FEMALE_PART_LIFT : undefined}
+          />
         </group>
       ) : null}
 

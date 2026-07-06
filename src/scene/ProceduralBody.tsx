@@ -1,6 +1,7 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
 import { regionName } from '../anatomy/anatomyMap'
+import type { BodyPart } from './bodyGeometry'
 import { BODY_PARTS } from './bodyGeometry'
 import { useHoverStore } from './hoverStore'
 import { ORGAN_PARTS, SKELETON_PARTS } from './internalAnatomy'
@@ -22,11 +23,19 @@ export function ProceduralBody({
   internalOnly = false,
   interactive = false,
   onSelect,
+  organSizeScale = 1,
+  partLift,
 }: {
   activeLayer: AnatomyLayer
   internalOnly?: boolean
   interactive?: boolean
   onSelect?: (regionId: string, point: { x: number; y: number; z: number }) => void
+  /** Shrinks every organ EXCEPT the brain about its own centre (the female
+   * organs are a scaled male layout; this trims them without moving them or the
+   * brain). 1 = no change. */
+  organSizeScale?: number
+  /** Per-part vertical nudge (part.key → Δy in the layout frame). */
+  partLift?: Record<string, number>
 }) {
   const setHover = useHoverStore((state) => state.setHover)
   const clearHover = useHoverStore((state) => state.clearHover)
@@ -48,12 +57,28 @@ export function ProceduralBody({
         const ghosted = !internalOnly && part.layer === 'skin' && showSkinGhost
         const label = part.label ?? (part.layer === 'skin' ? regionName(part.regionId) : undefined)
         const hoverable = interactive && !!label
+        // Trim size in place (skip the brain), and apply any per-part lift. A
+        // tube (the colon) has no mesh scale — thin its radius instead.
+        const shrink = organSizeScale !== 1 && part.key !== 'brain'
+        const geomPart: Pick<BodyPart, 'shape' | 'args' | 'points'> =
+          shrink && part.shape === 'tube'
+            ? { ...part, args: [part.args[0], part.args[1] * organSizeScale, part.args[2]] }
+            : part
+        const baseScale = part.scale ?? [1, 1, 1]
+        const scale =
+          shrink && part.shape !== 'tube'
+            ? ([baseScale[0] * organSizeScale, baseScale[1] * organSizeScale, baseScale[2] * organSizeScale] as [number, number, number])
+            : baseScale
+        const lift = partLift?.[part.key]
+        const position: [number, number, number] = lift
+          ? [part.position[0], part.position[1] + lift, part.position[2]]
+          : part.position
         return (
           <mesh
             key={part.key}
-            position={part.position}
+            position={position}
             rotation={part.rotation ?? [0, 0, 0]}
-            scale={part.scale ?? [1, 1, 1]}
+            scale={scale}
             raycast={hoverable ? undefined : () => null}
             castShadow={!ghosted}
             receiveShadow={!ghosted}
@@ -79,7 +104,7 @@ export function ProceduralBody({
                 : undefined
             }
           >
-            {geometryFor(part)}
+            {geometryFor(geomPart)}
             <meshStandardMaterial
               key={ghosted ? 'ghosted' : 'solid'}
               color={part.color}
