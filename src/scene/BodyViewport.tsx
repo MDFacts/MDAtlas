@@ -99,7 +99,7 @@ export function BodyViewport() {
       <button
         type="button"
         onClick={flipView}
-        className="no-print glass absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-ink-soft transition hover:text-brand"
+        className="no-print glass absolute bottom-4 left-4 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-ink-soft transition hover:text-brand"
       >
         <RotateIcon width={15} height={15} className="text-brand" />
         {backView ? 'Show front' : 'Show back'}

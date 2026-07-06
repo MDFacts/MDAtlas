@@ -65,3 +65,15 @@ export const RotateIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M20 12a8 8 0 0 1-13.7 5.6L4 16M4 20v-4h4" />
   </svg>
 )
+
+export const MenuIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+)
+
+export const CloseIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+)

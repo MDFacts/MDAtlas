@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BodyViewport } from './scene/BodyViewport'
 import { useAssessmentStore } from './state/assessmentStore'
-import { AttributionNote } from './ui/AttributionNote'
 import { Disclaimer } from './ui/Disclaimer'
 import { DoctorReport } from './ui/DoctorReport'
 import { LockIcon, PulseIcon, ShieldIcon, SparkIcon } from './ui/icons'
@@ -139,7 +138,6 @@ export default function App() {
         <section className="relative min-h-[46vh] flex-1 overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-b from-white/50 to-white/10 shadow-[0_20px_60px_rgba(23,55,110,0.10)]">
           <BodyViewport />
           <LayerSwitcher />
-          <AttributionNote />
         </section>
 
         <aside className="glass flex w-full flex-col overflow-hidden rounded-3xl md:w-[430px]">
