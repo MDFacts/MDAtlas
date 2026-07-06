@@ -1,13 +1,35 @@
+import { useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ContactShadows, Environment, Lightformer, OrbitControls } from '@react-three/drei'
 import { ACESFilmicToneMapping } from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useAssessmentStore } from '../state/assessmentStore'
 import { RotateIcon } from '../ui/icons'
 import { HumanBody } from './HumanBody'
 
+// The camera orientation the front/back button snaps to (matches the initial
+// camera): dead-centre azimuth, near-level polar. The model itself flips 180°
+// for the back view, so the face on show is always lit by the front rig.
+const FRONT_AZIMUTH = 0
+const LEVEL_POLAR = 1.527
+
 export function BodyViewport() {
   const toggleView = useAssessmentStore((state) => state.toggleView)
   const backView = useAssessmentStore((state) => state.backView)
+  const controls = useRef<OrbitControlsImpl>(null)
+
+  // Reorient to the fixed front-facing camera so "Show back"/"Show front" always
+  // land on the same orientation regardless of how the user has orbited — the
+  // model's own 180° flip then determines whether the front or back is seen.
+  const flipView = () => {
+    const c = controls.current
+    if (c) {
+      c.setAzimuthalAngle(FRONT_AZIMUTH)
+      c.setPolarAngle(LEVEL_POLAR)
+      c.update()
+    }
+    toggleView()
+  }
 
   return (
     <div
@@ -64,6 +86,7 @@ export function BodyViewport() {
         />
 
         <OrbitControls
+          ref={controls}
           target={[0, 1.9, 0]}
           enablePan={false}
           minDistance={1.6}
@@ -75,7 +98,7 @@ export function BodyViewport() {
 
       <button
         type="button"
-        onClick={toggleView}
+        onClick={flipView}
         className="no-print glass absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-ink-soft transition hover:text-brand"
       >
         <RotateIcon width={15} height={15} className="text-brand" />

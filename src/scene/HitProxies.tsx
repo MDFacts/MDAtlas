@@ -2,7 +2,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { Mesh } from 'three'
 import { regionName } from '../anatomy/anatomyMap'
 import { useAssessmentStore } from '../state/assessmentStore'
-import { FEMALE_HIT_SCALE, HIT_REGIONS } from './hitRegions'
+import { hitRegionsFor } from './hitRegions'
 import type { HitRegion } from './hitRegions'
 import { useHoverStore } from './hoverStore'
 import { geometryFor } from './regionGeometry'
@@ -95,11 +95,10 @@ export function HitProxies({
   const bodySex = useAssessmentStore((state) => state.bodySex)
   const activeLayer = useAssessmentStore((state) => state.activeLayer)
   const hoverEnabled = activeLayer === 'skin'
-  const groupScale = bodySex === 'female' ? FEMALE_HIT_SCALE : 1
 
   return (
-    <group scale={groupScale}>
-      {HIT_REGIONS.map((region) => (
+    <group>
+      {hitRegionsFor(bodySex).map((region) => (
         <HitProxy
           key={region.key}
           region={region}
