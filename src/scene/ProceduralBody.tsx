@@ -1,5 +1,6 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
+import { regionName } from '../anatomy/anatomyMap'
 import { BODY_PARTS } from './bodyGeometry'
 import { useHoverStore } from './hoverStore'
 import { ORGAN_PARTS, SKELETON_PARTS } from './internalAnatomy'
@@ -12,8 +13,9 @@ import { geometryFor } from './regionGeometry'
  *  - Internal overlay (internalOnly=true) alongside the realistic mesh: renders
  *    only skeleton/organ structures, since the realistic mesh supplies the skin.
  *
- * When `interactive` (the organs overlay), each part reports its label to the
- * hover store on pointer-over. Tap detection stays with HitProxies.
+ * When `interactive`, each part reports its label (or its region's name for
+ * skin parts) on hover, and taps select the part's region directly — the same
+ * mesh-is-the-hit-target model the realistic body uses.
  */
 export function ProceduralBody({
   activeLayer,
@@ -44,7 +46,8 @@ export function ProceduralBody({
     <group>
       {visibleParts.map((part) => {
         const ghosted = !internalOnly && part.layer === 'skin' && showSkinGhost
-        const hoverable = interactive && !!part.label
+        const label = part.label ?? (part.layer === 'skin' ? regionName(part.regionId) : undefined)
+        const hoverable = interactive && !!label
         return (
           <mesh
             key={part.key}
@@ -59,7 +62,7 @@ export function ProceduralBody({
                 ? (event: ThreeEvent<PointerEvent>) => {
                     event.stopPropagation()
                     setHover(
-                      part.label as string,
+                      label as string,
                       { x: event.point.x, y: event.point.y, z: event.point.z },
                       'organ',
                     )

@@ -1,0 +1,126 @@
+import type { BodySex } from './modelConfig'
+
+/**
+ * Classifies a point ON THE BODY SURFACE into an assessment region.
+ *
+ * This replaces the invisible hit-proxy volumes for the skin layer. Proxies
+ * floated in front of the mesh, so a ray aimed at one body part could be
+ * intercepted by a volume belonging to another (worse when zoomed/orbited —
+ * the "genital area on the thigh" bug). Raycasting the visible mesh itself and
+ * classifying the true hit point makes that impossible: the selected region is
+ * a pure function of where on the body the tap landed.
+ *
+ * Coordinates are BODY-LOCAL world units: feet at y=0, body faces +z, body's
+ * right side at −x (mirror of the viewer's left). Callers must un-rotate the
+ * point when the model is flipped for the back view.
+ */
+export interface RegionBounds {
+  /** Top of the head envelope; above neckTop is head. */
+  neckTop: number
+  /** Shoulder line — chest starts below, shoulders sit at it. */
+  shoulderTop: number
+  /** Bottom of the pecs/bust: chest ↔ upper-abdomen boundary. */
+  pecBottom: number
+  /** The navel: upper ↔ lower abdomen boundary. */
+  navel: number
+  /** The pubic bone: lower-abdomen ↔ pelvis boundary. */
+  pubic: number
+  /** Top of the legs (the crotch); below this is legs. */
+  crotch: number
+  /** Vertical band of the external genitalia (front, near midline). */
+  genitalTop: number
+  genitalBottom: number
+  /** Half-width of the genital band around the midline. */
+  genitalHalfW: number
+  /** |x| beyond this (below the shoulder line) is the arm. */
+  armMinX: number
+  /** |x| beyond this at shoulder height is the shoulder ball. */
+  shoulderMinX: number
+  /** z behind this is the back surface. */
+  backMaxZ: number
+}
+
+/**
+ * Boundaries read off each rendered model against world-height reference lines
+ * and confirmed by tap-point readback. Male ≈3.47 tall, female ≈3.17.
+ */
+export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
+  male: {
+    neckTop: 3.02,
+    shoulderTop: 2.72,
+    pecBottom: 2.35,
+    navel: 1.92,
+    pubic: 1.55,
+    crotch: 1.42,
+    genitalTop: 1.5,
+    genitalBottom: 1.26,
+    genitalHalfW: 0.1,
+    armMinX: 0.45,
+    shoulderMinX: 0.28,
+    backMaxZ: -0.1,
+  },
+  female: {
+    neckTop: 2.76,
+    shoulderTop: 2.48,
+    pecBottom: 2.18,
+    navel: 1.82,
+    pubic: 1.48,
+    crotch: 1.34,
+    genitalTop: 1.44,
+    genitalBottom: 1.2,
+    genitalHalfW: 0.09,
+    armMinX: 0.42,
+    shoulderMinX: 0.26,
+    backMaxZ: -0.1,
+  },
+}
+
+export interface Point3 {
+  x: number
+  y: number
+  z: number
+}
+
+/** Region for a body-surface point, in body-local coordinates. */
+export function classifyRegion(point: Point3, sex: BodySex): string {
+  const B = REGION_BOUNDS[sex]
+  const { x, y, z } = point
+  const ax = Math.abs(x)
+  const left = x > 0
+
+  // Arms first — they reach across many height bands and sit far lateral.
+  if (ax > B.armMinX && y < B.shoulderTop) {
+    return left ? 'leftArm' : 'rightArm'
+  }
+
+  if (y > B.neckTop) return 'head'
+  if (y > B.shoulderTop) {
+    if (ax > B.shoulderMinX) return left ? 'leftShoulder' : 'rightShoulder'
+    return 'neck'
+  }
+
+  // Back surface (torso only — legs/arms handled by their own bands).
+  if (z < B.backMaxZ && y > B.crotch) {
+    if (y > B.pecBottom) return 'upperBack'
+    if (y > B.pubic) return 'lowerBack'
+    return 'pelvis' // gluteal region
+  }
+
+  if (y > B.pecBottom) return 'chest'
+  if (y > B.navel) {
+    // RUQ / epigastric / LUQ tile the band; body's right is −x.
+    if (x < -0.09) return 'rightUpperAbdomen'
+    if (x > 0.09) return 'leftUpperAbdomen'
+    return 'epigastric'
+  }
+  if (y > B.pubic) {
+    return left ? 'leftLowerAbdomen' : 'rightLowerAbdomen'
+  }
+
+  // External genitalia: a narrow central band on the FRONT of the pubis.
+  if (y > B.genitalBottom && y <= B.genitalTop && ax < B.genitalHalfW && z > 0) {
+    return 'genitals'
+  }
+  if (y > B.crotch) return 'pelvis'
+  return left ? 'leftLeg' : 'rightLeg'
+}

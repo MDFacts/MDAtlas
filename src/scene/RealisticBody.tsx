@@ -90,10 +90,10 @@ export function RealisticBody({
   url: string
   material: BodyMaterial
   /** When set, sub-meshes stay raycastable and report this label on hover
-   * (used to name bones on the skeleton layer). */
-  hoverLabelFor?: (name: string, point: { x: number; y: number }) => string | null
-  /** Maps a clicked sub-mesh to an assessment region (skeleton layer). */
-  regionFor?: (name: string, point: { x: number; y: number }) => string | null
+   * (bones on the skeleton layer, regions on the skin layer). */
+  hoverLabelFor?: (name: string, point: { x: number; y: number; z: number }) => string | null
+  /** Maps a hit on a sub-mesh to an assessment region. */
+  regionFor?: (name: string, point: { x: number; y: number; z: number }) => string | null
   onSelect?: (regionId: string, point: { x: number; y: number; z: number }) => void
 }) {
   const { scene } = useGLTF(url)
@@ -163,10 +163,11 @@ export function RealisticBody({
       onPointerMove={
         hoverLabelFor
           ? (event) => {
-              const label = hoverLabelFor(event.object.name, { x: event.point.x, y: event.point.y })
+              const point = { x: event.point.x, y: event.point.y, z: event.point.z }
+              const label = hoverLabelFor(event.object.name, point)
               if (label) {
                 event.stopPropagation()
-                setHover(label, { x: event.point.x, y: event.point.y, z: event.point.z }, 'bone')
+                setHover(label, point, 'bone')
               }
             }
           : undefined
@@ -175,10 +176,11 @@ export function RealisticBody({
       onPointerDown={
         regionFor && onSelect
           ? (event) => {
-              const region = regionFor(event.object.name, { x: event.point.x, y: event.point.y })
+              const point = { x: event.point.x, y: event.point.y, z: event.point.z }
+              const region = regionFor(event.object.name, point)
               if (region) {
                 event.stopPropagation()
-                onSelect(region, { x: event.point.x, y: event.point.y, z: event.point.z })
+                onSelect(region, point)
               }
             }
           : undefined

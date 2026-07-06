@@ -31,3 +31,9 @@ export const BODY_TARGET_HEIGHT = 3.4
  * so a standing adult maps to roughly BODY_TARGET_HEIGHT world units.
  */
 export const BODY_MODEL_SCALE = 1.95
+
+/**
+ * Female height (5'4") relative to male (5'10") — scales the PRIMITIVE
+ * organ/skeleton internals (laid out on the male envelope) down for the female.
+ */
+export const FEMALE_HIT_SCALE = 0.915
