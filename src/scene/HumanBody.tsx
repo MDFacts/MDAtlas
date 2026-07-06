@@ -21,10 +21,10 @@ const ORGAN_Z_OFFSET = -0.04
 // lands too far forward. Shift it back to align the two depth midpoints (even
 // tissue margin front and back). The two exports differ in depth, so the offset
 // is measured per sex: male body/skel midpoints −0.029/+0.038 → −0.066; female
-// −0.034/−0.029 → −0.005.
+// −0.034/−0.019 → −0.015.
 const SKELETON_Z_OFFSET: Record<'male' | 'female', number> = {
   male: -0.066,
-  female: -0.005,
+  female: -0.015,
 }
 
 export function HumanBody() {
