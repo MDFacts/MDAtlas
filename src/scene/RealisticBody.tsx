@@ -177,6 +177,12 @@ export function RealisticBody({
         regionFor && onSelect
           ? (event) => {
               const point = { x: event.point.x, y: event.point.y, z: event.point.z }
+              // Touch devices have no hover, so surface the name chip on the tap
+              // itself (desktop already shows it via onPointerMove).
+              if (hoverLabelFor) {
+                const label = hoverLabelFor(event.object.name, point)
+                if (label) setHover(label, point, 'bone')
+              }
               const region = regionFor(event.object.name, point)
               if (region) {
                 event.stopPropagation()

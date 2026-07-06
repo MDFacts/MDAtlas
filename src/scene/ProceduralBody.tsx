@@ -99,7 +99,10 @@ export function ProceduralBody({
               hoverable && onSelect
                 ? (event: ThreeEvent<PointerEvent>) => {
                     event.stopPropagation()
-                    onSelect(part.regionId, { x: event.point.x, y: event.point.y, z: event.point.z })
+                    const point = { x: event.point.x, y: event.point.y, z: event.point.z }
+                    // Touch has no hover — show the name chip on the tap itself.
+                    setHover(label as string, point, 'organ')
+                    onSelect(part.regionId, point)
                   }
                 : undefined
             }
