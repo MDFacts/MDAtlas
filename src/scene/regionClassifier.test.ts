@@ -35,6 +35,18 @@ describe('classifyRegion', () => {
     }
   })
 
+  it('sends the inner upper arm to the arm, not the chest', () => {
+    for (const sex of SEXES) {
+      const B = REGION_BOUNDS[sex]
+      const y = (B.shoulderTop + B.pecBottom) / 2
+      // Just lateral of the armpit crease = arm territory.
+      expect(classifyRegion({ x: B.armMinX + 0.02, y, z: 0.05 }, sex)).toBe('leftArm')
+      expect(classifyRegion({ x: -(B.armMinX + 0.02), y, z: 0.05 }, sex)).toBe('rightArm')
+      // Just medial of it stays chest.
+      expect(classifyRegion({ x: B.armMinX - 0.04, y, z: 0.05 }, sex)).toBe('chest')
+    }
+  })
+
   it('keeps the armpit / torso side out of the back regions', () => {
     for (const sex of SEXES) {
       const B = REGION_BOUNDS[sex]

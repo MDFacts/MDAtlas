@@ -67,7 +67,9 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     genitalTop: 1.72,
     genitalBottom: 1.52,
     genitalHalfW: 0.1,
-    armMinX: 0.45,
+    // Armpit crease sits at |x|≈0.42; anything lateral of it is arm. (0.45 left
+    // the inner half of the upper arm reading as chest.)
+    armMinX: 0.41,
     shoulderMinX: 0.28,
     backMaxZ: -0.1,
     backHalfW: 0.32,
@@ -83,7 +85,8 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     genitalTop: 1.68,
     genitalBottom: 1.53,
     genitalHalfW: 0.09,
-    armMinX: 0.42,
+    // Female armpit crease ≈0.38.
+    armMinX: 0.38,
     shoulderMinX: 0.26,
     backMaxZ: -0.1,
     backHalfW: 0.3,
