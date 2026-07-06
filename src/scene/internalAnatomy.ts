@@ -172,12 +172,12 @@ export const SKELETON_PARTS: BodyPart[] = [
 // --- Small-bowel: coil mass tucked inside the colon frame (kept compact so it
 // stays within the abdominal wall) ---
 const bowelCoils: BodyPart[] = [
-  [-0.05, 2.02, 0.0, 0.06],
-  [0.06, 2.01, -0.01, 0.058],
-  [-0.01, 1.95, 0.01, 0.065],
-  [0.04, 1.89, 0.0, 0.06],
-  [-0.06, 1.88, -0.01, 0.055],
-  [0.01, 1.83, 0.0, 0.058],
+  [-0.05, 2.02, -0.03, 0.06],
+  [0.06, 2.01, -0.04, 0.058],
+  [-0.01, 1.95, -0.02, 0.065],
+  [0.04, 1.89, -0.03, 0.06],
+  [-0.06, 1.88, -0.04, 0.055],
+  [0.01, 1.83, -0.03, 0.058],
 ].map(([x, y, z, r], i) =>
   organ(`smallBowel-${i}`, 'rightLowerAbdomen', 'Small intestine', 'torus', [r, 0.035, 8, 22], [x, y, z], ORGAN_COL.bowel, {
     rotation: [0.2 * (i - 2), 0.3 * i, 0.7 * i],
@@ -187,69 +187,76 @@ const bowelCoils: BodyPart[] = [
 // Torso interior is roughly ±0.24 wide (x) and ±0.12 deep (z); organs are sized
 // to stay comfortably inside the visible body wall.
 export const ORGAN_PARTS: BodyPart[] = [
-  organ('brain', 'head', 'Brain', 'sphere', [0.155, 24, 18], [0, 3.3, -0.02], ORGAN_COL.brain, {
+  // Brain sits back in the cranium: the head interior at this height spans
+  // z≈[−0.34, +0.07] (centre −0.13), so −0.09 here (−0.13 effective with the
+  // group offset) keeps the frontal lobe behind the face.
+  organ('brain', 'head', 'Brain', 'sphere', [0.155, 24, 18], [0, 3.3, -0.09], ORGAN_COL.brain, {
     scale: [0.86, 0.82, 0.96],
   }),
 
-  // Airway: trachea splitting into the two main bronchi
-  organ('trachea', 'neck', 'Trachea', 'cylinder', [0.026, 0.028, 0.3, 12], [0, 2.86, -0.03], ORGAN_COL.airway),
-  organ('bronchusR', 'chest', 'Bronchus', 'cylinder', [0.015, 0.019, 0.13, 8], [-0.055, 2.68, -0.04], ORGAN_COL.airway, {
+  // Airway: trachea splitting into the two main bronchi. The whole upper stack
+  // sits back in line with the brain (spine-deep, not against the chest wall).
+  organ('trachea', 'neck', 'Trachea', 'cylinder', [0.026, 0.028, 0.3, 12], [0, 2.86, -0.09], ORGAN_COL.airway),
+  organ('bronchusR', 'chest', 'Bronchus', 'cylinder', [0.015, 0.019, 0.13, 8], [-0.055, 2.68, -0.1], ORGAN_COL.airway, {
     rotation: [0, 0, 0.7],
   }),
-  organ('bronchusL', 'chest', 'Bronchus', 'cylinder', [0.015, 0.019, 0.13, 8], [0.055, 2.68, -0.04], ORGAN_COL.airway, {
+  organ('bronchusL', 'chest', 'Bronchus', 'cylinder', [0.015, 0.019, 0.13, 8], [0.055, 2.68, -0.1], ORGAN_COL.airway, {
     rotation: [0, 0, -0.7],
   }),
 
   // Lungs — fill the ribcage without reaching the body wall; right lung a touch
   // larger and higher, medial sides notched around the heart (two stacked lobes).
-  organ('rightLungUpper', 'chest', 'Right lung', 'capsule', [0.115, 0.2, 8, 16], [-0.145, 2.66, -0.04], ORGAN_COL.lung, {
+  organ('rightLungUpper', 'chest', 'Right lung', 'capsule', [0.115, 0.2, 8, 16], [-0.145, 2.66, -0.1], ORGAN_COL.lung, {
     rotation: [0, 0, -0.05],
     scale: [1, 1, 0.7],
   }),
-  organ('rightLungLower', 'chest', 'Right lung', 'capsule', [0.11, 0.12, 8, 16], [-0.145, 2.47, -0.04], ORGAN_COL.lung, {
+  organ('rightLungLower', 'chest', 'Right lung', 'capsule', [0.11, 0.12, 8, 16], [-0.145, 2.47, -0.1], ORGAN_COL.lung, {
     scale: [1, 1, 0.7],
   }),
-  organ('leftLungUpper', 'chest', 'Left lung', 'capsule', [0.105, 0.2, 8, 16], [0.15, 2.66, -0.04], ORGAN_COL.lung, {
+  organ('leftLungUpper', 'chest', 'Left lung', 'capsule', [0.105, 0.2, 8, 16], [0.15, 2.66, -0.1], ORGAN_COL.lung, {
     rotation: [0, 0, 0.05],
     scale: [1, 1, 0.7],
   }),
-  organ('leftLungLower', 'chest', 'Left lung', 'capsule', [0.1, 0.11, 8, 16], [0.155, 2.48, -0.04], ORGAN_COL.lung, {
+  organ('leftLungLower', 'chest', 'Left lung', 'capsule', [0.1, 0.11, 8, 16], [0.155, 2.48, -0.1], ORGAN_COL.lung, {
     scale: [1, 1, 0.7],
   }),
-  organ('heart', 'chest', 'Heart', 'sphere', [0.095, 20, 16], [0.015, 2.56, -0.01], ORGAN_COL.heart, {
+  organ('heart', 'chest', 'Heart', 'sphere', [0.095, 20, 16], [0.015, 2.56, -0.07], ORGAN_COL.heart, {
     scale: [0.95, 1.2, 0.85],
     rotation: [0.2, 0, 0.32],
   }),
 
   // Liver — broad wedge under the right ribs, larger right lobe crossing the
   // midline; sized to stay within the abdominal wall.
-  organ('liverRight', 'rightUpperAbdomen', 'Liver', 'sphere', [0.135, 20, 16], [-0.09, 2.36, -0.03], ORGAN_COL.liver, {
+  organ('liverRight', 'rightUpperAbdomen', 'Liver', 'sphere', [0.135, 20, 16], [-0.09, 2.36, -0.09], ORGAN_COL.liver, {
     scale: [1.2, 0.6, 0.82],
     rotation: [0, 0, 0.12],
   }),
-  organ('liverLeft', 'epigastric', 'Liver', 'sphere', [0.09, 18, 14], [0.08, 2.35, -0.02], ORGAN_COL.liver, {
+  organ('liverLeft', 'epigastric', 'Liver', 'sphere', [0.09, 18, 14], [0.08, 2.35, -0.08], ORGAN_COL.liver, {
     scale: [1.1, 0.5, 0.75],
     rotation: [0, 0, -0.1],
   }),
-  organ('gallbladder', 'rightUpperAbdomen', 'Gallbladder', 'capsule', [0.026, 0.05, 6, 10], [-0.1, 2.26, 0.02], ORGAN_COL.gallbladder, {
+  organ('gallbladder', 'rightUpperAbdomen', 'Gallbladder', 'capsule', [0.026, 0.05, 6, 10], [-0.1, 2.26, -0.04], ORGAN_COL.gallbladder, {
     rotation: [0.4, 0, 0.5],
   }),
 
   // Epigastrium — stomach (J-shaped) with pancreas behind it
-  organ('stomach', 'epigastric', 'Stomach', 'torus', [0.075, 0.045, 10, 22, 3.7], [0.09, 2.34, -0.02], ORGAN_COL.stomach, {
+  organ('stomach', 'epigastric', 'Stomach', 'torus', [0.075, 0.045, 10, 22, 3.7], [0.09, 2.34, -0.08], ORGAN_COL.stomach, {
     rotation: [0.2, 0.3, 0.7],
     scale: [1.1, 1.15, 0.9],
   }),
-  organ('pancreas', 'epigastric', 'Pancreas', 'capsule', [0.03, 0.18, 6, 10], [-0.02, 2.21, -0.06], ORGAN_COL.pancreas, {
+  // Lower stack (pancreas down) shifts back LESS than the thorax — it hugs the
+  // spine already, and the kidneys must not breach the back wall.
+  organ('pancreas', 'epigastric', 'Pancreas', 'capsule', [0.03, 0.18, 6, 10], [-0.02, 2.21, -0.07], ORGAN_COL.pancreas, {
     rotation: [0, 0.2, 1.35],
   }),
 
   // Left upper quadrant — spleen behind the stomach
-  organ('spleen', 'leftUpperAbdomen', 'Spleen', 'capsule', [0.042, 0.08, 6, 10], [0.185, 2.38, -0.07], ORGAN_COL.spleen, {
+  organ('spleen', 'leftUpperAbdomen', 'Spleen', 'capsule', [0.042, 0.08, 6, 10], [0.185, 2.38, -0.13], ORGAN_COL.spleen, {
     rotation: [0.3, 0, 0.5],
   }),
 
-  // Retroperitoneum — kidneys sit high and posterior
+  // Retroperitoneum — kidneys sit high and posterior, already snug against the
+  // back wall, so they keep their depth rather than following the thorax back.
   organ('rightKidney', 'lowerBack', 'Right kidney', 'capsule', [0.045, 0.08, 8, 12], [-0.13, 2.14, -0.13], ORGAN_COL.kidney, {
     rotation: [0, 0, -0.18],
   }),
@@ -269,21 +276,21 @@ export const ORGAN_PARTS: BodyPart[] = [
     args: [96, 0.043, 12],
     position: [0, 0, 0],
     points: [
-      [-0.17, 1.72, -0.01], // cecum
-      [-0.185, 1.82, -0.03], // ascending, low
-      [-0.185, 1.97, -0.04], // ascending, high
-      [-0.16, 2.13, -0.05], // hepatic flexure
-      [-0.08, 2.15, -0.03], // transverse, right
-      [0, 2.11, -0.02], // transverse, mid (dips forward)
-      [0.09, 2.15, -0.03], // transverse, left
-      [0.17, 2.14, -0.05], // splenic flexure
-      [0.185, 1.95, -0.04], // descending, high
-      [0.18, 1.8, -0.03], // descending, low
-      [0.1, 1.72, -0.01], // sigmoid
-      [0.02, 1.67, -0.02], // sigmoid → rectum
+      [-0.17, 1.72, -0.04], // cecum
+      [-0.185, 1.82, -0.06], // ascending, low
+      [-0.185, 1.97, -0.07], // ascending, high
+      [-0.16, 2.13, -0.08], // hepatic flexure
+      [-0.08, 2.15, -0.06], // transverse, right
+      [0, 2.11, -0.05], // transverse, mid (dips forward)
+      [0.09, 2.15, -0.06], // transverse, left
+      [0.17, 2.14, -0.08], // splenic flexure
+      [0.185, 1.95, -0.07], // descending, high
+      [0.18, 1.8, -0.06], // descending, low
+      [0.1, 1.72, -0.04], // sigmoid
+      [0.02, 1.67, -0.05], // sigmoid → rectum
     ],
   },
-  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.7, 0], ORGAN_COL.appendix, {
+  organ('appendix', 'rightLowerAbdomen', 'Appendix', 'capsule', [0.016, 0.06, 4, 8], [-0.16, 1.7, -0.03], ORGAN_COL.appendix, {
     rotation: [0, 0, 0.5],
   }),
 
@@ -291,7 +298,7 @@ export const ORGAN_PARTS: BodyPart[] = [
   ...bowelCoils,
 
   // Pelvis — bladder tucked snugly below the small bowel, behind the pubic bone
-  organ('bladder', 'pelvis', 'Bladder', 'sphere', [0.065, 16, 12], [0, 1.67, -0.01], ORGAN_COL.bladder, {
+  organ('bladder', 'pelvis', 'Bladder', 'sphere', [0.065, 16, 12], [0, 1.67, -0.04], ORGAN_COL.bladder, {
     scale: [1.05, 0.85, 0.9],
   }),
 ]
