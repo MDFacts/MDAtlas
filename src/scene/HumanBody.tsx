@@ -8,6 +8,7 @@ import { BODY_MODELS, FEMALE_HIT_SCALE, SKELETON_MODELS } from './modelConfig'
 import { PainMarker } from './PainMarker'
 import { ProceduralBody } from './ProceduralBody'
 import { RealisticBody } from './RealisticBody'
+import { SceneLoader } from './SceneLoader'
 import { classifyRegion } from './regionClassifier'
 import type { Point3 } from './regionClassifier'
 
@@ -99,9 +100,10 @@ export function HumanBody() {
   return (
     <group rotation={[0, backView ? Math.PI : 0, 0]}>
       {/* Skin body — solid + tappable on the skin layer, ghosted for context
-          under a deeper one. */}
+          under a deeper one. A spinner covers loading; the primitive body is
+          only the hard-error fallback. */}
       <BodyErrorBoundary key={`body-${modelUrl}`} fallback={skinFallback}>
-        <Suspense fallback={skinFallback}>
+        <Suspense fallback={<SceneLoader />}>
           <RealisticBody
             url={modelUrl}
             material={deeper ? SKIN_GHOST_MATERIAL : SKIN_MATERIAL}
