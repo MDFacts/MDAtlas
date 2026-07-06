@@ -14,9 +14,16 @@ import type { Point3 } from './regionClassifier'
 const SKIN_MATERIAL = { color: '#d9c3b0', roughness: 0.7 }
 const SKIN_GHOST_MATERIAL = { color: '#8ba6c8', roughness: 0.6, ghost: true }
 const BONE_MATERIAL = { color: '#f2eee2', roughness: 0.5, metalness: 0.04 }
-// Nudge the whole organ group back so it nests inside the torso rather than
-// bulging toward the belly.
-const ORGAN_Z_OFFSET = -0.04
+// Depth offset for the whole organ group (the primitives are laid out on the
+// MALE envelope). Male nests them back off the belly; the female is shallower
+// and her head/torso sit further forward, so the same layout (even scaled by
+// FEMALE_HIT_SCALE) lands too deep and the brain breaches the back of her skull
+// — she needs a forward shift. Measured: female head interior centre ≈ −0.05 at
+// brain height, so +0.025 here centres the scaled brain in it.
+const ORGAN_Z_OFFSET: Record<'male' | 'female', number> = {
+  male: -0.04,
+  female: 0.025,
+}
 // The skeleton GLB and skin GLB are each centered on their own vertex centroid,
 // but the skeleton's ribcage mass sits forward of the body's centroid, so it
 // lands too far forward. Shift it back to align the two depth midpoints (even
@@ -111,7 +118,7 @@ export function HumanBody() {
       {/* Organs remain primitive (no organ mesh supplied yet) — interactive so
           each organ names itself on hover and taps start an assessment. */}
       {activeLayer === 'organs' ? (
-        <group scale={internalScale} position={[0, 0, ORGAN_Z_OFFSET]}>
+        <group scale={internalScale} position={[0, 0, ORGAN_Z_OFFSET[bodySex]]}>
           <ProceduralBody activeLayer="organs" internalOnly interactive onSelect={selectRegion} />
         </group>
       ) : null}
