@@ -58,23 +58,39 @@ function boneGroup(name: string): string | null {
   return null
 }
 
+export interface BonePoint {
+  x: number
+  y: number
+  z: number
+}
+
 /** Body's left is +x, right is −x. */
 function side(x: number): string {
   return x > 0 ? 'Left' : 'Right'
 }
 
-// The GLB merges every arm/hand bone into one mesh and every hip/leg bone into
-// another, so the specific bone is resolved from the hover point's height in the
-// ~3.4-unit envelope (shoulder ≈2.78, elbow ≈2.05, wrist ≈1.5; hip ≈1.55,
-// knee ≈0.9, ankle ≈0.15).
-function armBoneLabel(p: { x: number; y: number }): string {
+/** The shoulder girdle (scapula + clavicle) is merged into the arm mesh, so it's
+ * neither its own mesh nor a distinct group. */
+function isShoulderGirdle(p: BonePoint): boolean {
+  return p.y > 2.3 && Math.abs(p.z) > 0.05
+}
+
+// The GLB merges every arm/hand bone (incl. the shoulder girdle) into one mesh
+// and every hip/leg bone into another, so the specific bone is resolved from the
+// hit point. Body faces +z, so z<0 is posterior (scapula) and z>0 anterior
+// (clavicle); below the girdle, height splits humerus/forearm/hand
+// (elbow ≈2.05, wrist ≈1.5; hip ≈1.55, knee ≈0.9, ankle ≈0.15).
+function armBoneLabel(p: BonePoint): string {
   const s = side(p.x)
+  if (isShoulderGirdle(p)) {
+    return p.z < 0 ? `${s} shoulder blade (scapula)` : `${s} collarbone (clavicle)`
+  }
   if (p.y > 2.05) return `${s} humerus (upper arm)`
   if (p.y > 1.5) return `${s} forearm (radius & ulna)`
   return `${s} hand (carpals & fingers)`
 }
 
-function legBoneLabel(p: { x: number; y: number }): string {
+function legBoneLabel(p: BonePoint): string {
   const s = side(p.x)
   if (p.y > 1.5) return `${s} hip bone (ilium)`
   if (p.y > 0.98) return `${s} femur (thigh)`
@@ -83,7 +99,7 @@ function legBoneLabel(p: { x: number; y: number }): string {
   return `${s} foot bones`
 }
 
-export function boneLabel(name: string, point?: { x: number; y: number }): string | null {
+export function boneLabel(name: string, point?: BonePoint): string | null {
   const group = boneGroup(name)
   if (!group) {
     return null
@@ -97,8 +113,9 @@ export function boneLabel(name: string, point?: { x: number; y: number }): strin
 
 /** Map a clicked bone to the assessment region it belongs to, so tapping a bone
  * on the skeleton layer starts an assessment like tapping the body does. Body's
- * left is +x, right is −x. */
-export function regionForBone(name: string, point: { x: number; y: number }): string | null {
+ * left is +x, right is −x. Points are in BODY-LOCAL space (the caller un-rotates
+ * for the back view). */
+export function regionForBone(name: string, point: BonePoint): string | null {
   const group = boneGroup(name)
   const left = point.x > 0
   switch (group) {
@@ -120,6 +137,8 @@ export function regionForBone(name: string, point: { x: number; y: number }): st
     case 'hipcartilage':
       return 'pelvis'
     case 'armshands':
+      // The shoulder girdle (scapula/clavicle) belongs to the shoulder, not the arm.
+      if (isShoulderGirdle(point)) return left ? 'leftShoulder' : 'rightShoulder'
       return left ? 'leftArm' : 'rightArm'
     case 'hipslegs':
       return point.y > 1.5 ? 'pelvis' : left ? 'leftLeg' : 'rightLeg'

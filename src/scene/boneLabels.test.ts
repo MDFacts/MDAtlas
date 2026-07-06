@@ -17,8 +17,16 @@ describe('boneLabel', () => {
   })
 
   it('resolves merged arm/leg meshes to a specific bone by height', () => {
-    expect(boneLabel('Object_6001', { x: -0.5, y: 2.4 })).toBe('Right humerus (upper arm)')
-    expect(boneLabel('Object_7', { x: 0.2, y: 0.5 })).toBe('Left tibia & fibula (shin)')
+    expect(boneLabel('Object_6001', { x: -0.5, y: 2.4, z: 0 })).toBe('Right humerus (upper arm)')
+    expect(boneLabel('Object_7', { x: 0.2, y: 0.5, z: 0 })).toBe('Left tibia & fibula (shin)')
+  })
+
+  it('names the shoulder girdle merged into the arm mesh (scapula vs clavicle by depth)', () => {
+    // High + posterior = scapula; high + anterior = clavicle. Body's right is −x.
+    expect(boneLabel('Object_6', { x: -0.16, y: 2.7, z: -0.16 })).toBe('Right shoulder blade (scapula)')
+    expect(boneLabel('Object_6001', { x: 0.16, y: 2.7, z: 0.16 })).toBe('Left collarbone (clavicle)')
+    // Same height but centred in depth is still the humerus, not the girdle.
+    expect(boneLabel('Object_6', { x: -0.4, y: 2.5, z: 0 })).toBe('Right humerus (upper arm)')
   })
 
   it('returns null for unrecognised meshes', () => {
@@ -29,12 +37,18 @@ describe('boneLabel', () => {
 
 describe('regionForBone', () => {
   it('maps male and female node ids to the same region', () => {
-    expect(regionForBone('Object_11', { x: 0, y: 2.6 })).toBe('chest')
-    expect(regionForBone('Object_11001', { x: 0, y: 2.6 })).toBe('chest')
+    expect(regionForBone('Object_11', { x: 0, y: 2.6, z: 0 })).toBe('chest')
+    expect(regionForBone('Object_11001', { x: 0, y: 2.6, z: 0 })).toBe('chest')
   })
 
   it('splits the spine into upper and lower back by height', () => {
-    expect(regionForBone('Object_14', { x: 0, y: 2.5 })).toBe('upperBack')
-    expect(regionForBone('Object_14', { x: 0, y: 1.9 })).toBe('lowerBack')
+    expect(regionForBone('Object_14', { x: 0, y: 2.5, z: -0.2 })).toBe('upperBack')
+    expect(regionForBone('Object_14', { x: 0, y: 1.9, z: -0.2 })).toBe('lowerBack')
+  })
+
+  it('routes the shoulder girdle to the shoulder, and the arm shaft to the arm', () => {
+    expect(regionForBone('Object_6', { x: -0.16, y: 2.7, z: -0.16 })).toBe('rightShoulder')
+    expect(regionForBone('Object_6001', { x: 0.16, y: 2.7, z: 0.16 })).toBe('leftShoulder')
+    expect(regionForBone('Object_6', { x: -0.5, y: 1.9, z: 0 })).toBe('rightArm')
   })
 })

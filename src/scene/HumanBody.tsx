@@ -73,6 +73,21 @@ export function HumanBody() {
   )
   const skinInteractive = activeLayer === 'skin'
 
+  // Bone labels/regions are position-based too — un-rotate the hit point for the
+  // back view so side (L/R) and depth (scapula vs clavicle) read correctly.
+  const toLocal = useCallback(
+    (point: Point3): Point3 => (backView ? { x: -point.x, y: point.y, z: -point.z } : point),
+    [backView],
+  )
+  const boneLabelLocal = useCallback(
+    (name: string, point: Point3) => boneLabel(name, toLocal(point)),
+    [toLocal],
+  )
+  const regionForBoneLocal = useCallback(
+    (name: string, point: Point3) => regionForBone(name, toLocal(point)),
+    [toLocal],
+  )
+
   const skinFallback = (
     <ProceduralBody
       activeLayer={activeLayer}
@@ -112,8 +127,8 @@ export function HumanBody() {
               <RealisticBody
                 url={skeletonUrl}
                 material={BONE_MATERIAL}
-                hoverLabelFor={boneLabel}
-                regionFor={regionForBone}
+                hoverLabelFor={boneLabelLocal}
+                regionFor={regionForBoneLocal}
                 onSelect={selectRegion}
               />
             </group>
