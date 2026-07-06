@@ -59,36 +59,43 @@ interface Landmarks {
   hipX: number
   legR: number
   footY: number
+  legTopY: number
   backZ: number
 }
 
-// Measured landmarks (world units). Height: male ≈3.47, female ≈3.17.
+// Landmarks (world units) CALIBRATED against the rendered body's surface anatomy
+// (read off each model with on-screen world-height reference lines), so each band
+// lands on the visible feature Nathan named: chest ends just below the pecs/bust,
+// upper abs end at the navel, lower abs end at the pubic bone, and the genitals
+// sit AT the pubis. Height: male ≈3.47, female ≈3.17.
+//   MALE surface: shoulders 2.75 · pec-bottom 2.28 · navel 1.88 · pubis 1.42 · crotch 1.30
+//   FEMALE surface: shoulders 2.55 · bust-bottom 2.18 · navel 1.80 · pubis 1.38 · crotch 1.26
 const MALE: Landmarks = {
   headY: 3.15, headR: 0.2,
-  neckY: 2.9,
-  shoulderY: 2.76, shoulderX: 0.42, shoulderR: 0.16,
-  chestY: 2.55, chestHalfW: 0.3, chestHalfH: 0.22, torsoDepthScale: 0.6,
-  upperAbdY: 2.18, upperAbdHalfH: 0.15, abdHalfW: 0.27,
-  lowerAbdY: 1.85, lowerAbdR: 0.19,
-  pelvisY: 1.58, pelvisHalfW: 0.34, pelvisHalfH: 0.17,
-  groinY: 1.4, groinR: 0.12,
+  neckY: 2.92,
+  shoulderY: 2.78, shoulderX: 0.42, shoulderR: 0.16,
+  chestY: 2.52, chestHalfW: 0.3, chestHalfH: 0.24, torsoDepthScale: 0.6,
+  upperAbdY: 2.08, upperAbdHalfH: 0.2, abdHalfW: 0.27,
+  lowerAbdY: 1.68, lowerAbdR: 0.2,
+  pelvisY: 1.55, pelvisHalfW: 0.33, pelvisHalfH: 0.14,
+  groinY: 1.4, groinR: 0.13,
   armShoulderX: 0.44, armShoulderY: 2.78, armHandX: 1.01, armHandY: 1.55, armR: 0.12,
-  hipX: 0.18, legR: 0.135, footY: 0.05,
-  backZ: -0.24,
+  hipX: 0.18, legR: 0.135, footY: 0.05, legTopY: 1.32,
+  backZ: -0.3,
 }
 
 const FEMALE: Landmarks = {
   headY: 2.92, headR: 0.18,
-  neckY: 2.64,
-  shoulderY: 2.46, shoulderX: 0.4, shoulderR: 0.15,
-  chestY: 2.28, chestHalfW: 0.25, chestHalfH: 0.19, torsoDepthScale: 0.62,
-  upperAbdY: 2.0, upperAbdHalfH: 0.13, abdHalfW: 0.23,
-  lowerAbdY: 1.72, lowerAbdR: 0.18,
-  pelvisY: 1.5, pelvisHalfW: 0.32, pelvisHalfH: 0.16,
-  groinY: 1.3, groinR: 0.11,
+  neckY: 2.62,
+  shoulderY: 2.55, shoulderX: 0.4, shoulderR: 0.15,
+  chestY: 2.37, chestHalfW: 0.25, chestHalfH: 0.2, torsoDepthScale: 0.62,
+  upperAbdY: 1.99, upperAbdHalfH: 0.19, abdHalfW: 0.23,
+  lowerAbdY: 1.61, lowerAbdR: 0.19,
+  pelvisY: 1.48, pelvisHalfW: 0.32, pelvisHalfH: 0.14,
+  groinY: 1.36, groinR: 0.12,
   armShoulderX: 0.42, armShoulderY: 2.46, armHandX: 1.02, armHandY: 1.56, armR: 0.115,
-  hipX: 0.17, legR: 0.13, footY: 0.05,
-  backZ: -0.22,
+  hipX: 0.17, legR: 0.13, footY: 0.05, legTopY: 1.24,
+  backZ: -0.28,
 }
 
 const region = (
@@ -119,8 +126,8 @@ function armRegion(key: string, regionId: string, L: Landmarks, side: number): H
 }
 
 function legRegion(key: string, regionId: string, L: Landmarks, side: number): HitRegion {
-  const midY = (L.groinY + L.footY) / 2
-  const cylLen = Math.max(0.1, L.groinY - L.footY - 2 * L.legR)
+  const midY = (L.legTopY + L.footY) / 2
+  const cylLen = Math.max(0.1, L.legTopY - L.footY - 2 * L.legR)
   return region(key, regionId, 'capsule', [L.legR, cylLen, 6, 12], [L.hipX * side, midY, 0], {
     rotation: [0, 0, 0.02 * side],
   })
@@ -159,10 +166,11 @@ function buildRegions(L: Landmarks): HitRegion[] {
     armRegion('leftArm', 'leftArm', L, 1),
     legRegion('rightLeg', 'rightLeg', L, -1),
     legRegion('leftLeg', 'leftLeg', L, 1),
-    // Back volumes sit proud of the torso depth so a ray from behind reaches them
-    // before the front torso volumes.
-    region('upperBack', 'upperBack', 'box', [Math.max(0.5, L.chestHalfW * 2 + 0.06), L.chestHalfH * 2.4, 0.2], [0, L.chestY - 0.08, L.backZ]),
-    region('lowerBack', 'lowerBack', 'box', [Math.max(0.42, L.abdHalfW * 2), (L.chestY - L.pelvisY) * 0.7, 0.2], [0, (L.upperAbdY + L.lowerAbdY) / 2, L.backZ + 0.02]),
+    // Back volumes sit WELL behind the torso (narrower than the body and pushed
+    // deep in −z) so a front ray always reaches a front volume first and never
+    // selects the back; from behind the model flips 180° and they face the camera.
+    region('upperBack', 'upperBack', 'box', [L.chestHalfW * 1.7, L.chestHalfH * 2.2, 0.18], [0, L.chestY - 0.05, L.backZ]),
+    region('lowerBack', 'lowerBack', 'box', [L.abdHalfW * 1.7, (L.chestY - L.pelvisY) * 0.6, 0.18], [0, (L.upperAbdY + L.lowerAbdY) / 2, L.backZ]),
   ]
 }
 

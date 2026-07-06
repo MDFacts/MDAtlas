@@ -35,11 +35,28 @@ describe('hitRegionsFor', () => {
     }
   })
 
-  it('keeps the upper-abdomen band short (shorter than it is wide across the trio)', () => {
+  it('stacks chest → upper abdomen → lower abdomen without a gap, top to bottom', () => {
     for (const sex of SEXES) {
-      const epi = hitRegionsFor(sex).find((r) => r.regionId === 'epigastric')!
-      const height = epi.args[1] // box [w, h, d]
-      expect(height).toBeLessThan(0.32)
+      const regions = hitRegionsFor(sex)
+      const chest = regions.find((r) => r.regionId === 'chest')!
+      const epi = regions.find((r) => r.regionId === 'epigastric')!
+      const lower = regions.find((r) => r.regionId === 'rightLowerAbdomen')!
+      const chestBottom = chest.position[1] - chest.args[2] / 2 // cylinder height is args[2]
+      const epiTop = epi.position[1] + epi.args[1] / 2
+      const epiBottom = epi.position[1] - epi.args[1] / 2
+      const lowerTop = lower.position[1] + lower.args[0] // sphere radius
+      // Chest meets the top of the upper-abdomen band; the band meets the lower one.
+      expect(Math.abs(chestBottom - epiTop)).toBeLessThan(0.06)
+      expect(Math.abs(epiBottom - lowerTop)).toBeLessThan(0.12)
+    }
+  })
+
+  it('keeps the genitals below the lower abdomen, at the groin', () => {
+    for (const sex of SEXES) {
+      const regions = hitRegionsFor(sex)
+      const lower = regions.find((r) => r.regionId === 'rightLowerAbdomen')!
+      const genitals = regions.find((r) => r.regionId === 'genitals')!
+      expect(genitals.position[1]).toBeLessThan(lower.position[1])
     }
   })
 })
