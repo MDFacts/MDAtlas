@@ -7,17 +7,22 @@
  * y≈BODY_TARGET_HEIGHT) so the tap hit-proxies line up regardless of the model's
  * original scale or pose.
  */
+// Prefix with Vite's base URL ('/' in dev, '/MDAtlas/' on GitHub Pages) so these
+// runtime fetch paths resolve under a subpath deploy — absolute '/models/…' would
+// hit the domain root and 404 on Pages.
+const BASE = import.meta.env.BASE_URL
+
 export const BODY_MODELS = {
-  male: '/models/body_male.glb',
-  female: '/models/body_female.glb',
+  male: `${BASE}models/body_male.glb`,
+  female: `${BASE}models/body_female.glb`,
 } as const
 
 export type BodySex = keyof typeof BODY_MODELS
 
 /** Realistic skeleton meshes, authored to overlay the body models. */
 export const SKELETON_MODELS = {
-  male: '/models/skeleton_male.glb',
-  female: '/models/skeleton_female.glb',
+  male: `${BASE}models/skeleton_male.glb`,
+  female: `${BASE}models/skeleton_female.glb`,
 } as const
 
 /** Target standing height in world units — matches the hit-proxy layout. */
