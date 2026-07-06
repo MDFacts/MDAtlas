@@ -35,10 +35,10 @@ describe('classifyRegion', () => {
     }
   })
 
-  it('sends the inner upper arm to the arm, not the chest', () => {
+  it('sends the inner upper arm (below the shoulder cap) to the arm, not the chest', () => {
     for (const sex of SEXES) {
       const B = REGION_BOUNDS[sex]
-      const y = (B.shoulderTop + B.pecBottom) / 2
+      const y = (B.shoulderBottom + B.pecBottom) / 2
       // Just lateral of the armpit crease = arm territory.
       expect(classifyRegion({ x: B.armMinX + 0.02, y, z: 0.05 }, sex)).toBe('leftArm')
       expect(classifyRegion({ x: -(B.armMinX + 0.02), y, z: 0.05 }, sex)).toBe('rightArm')
@@ -47,12 +47,30 @@ describe('classifyRegion', () => {
     }
   })
 
+  it('wraps the shoulder cap from the armpit line over to the rear deltoid', () => {
+    for (const sex of SEXES) {
+      const B = REGION_BOUNDS[sex]
+      const capY = (B.shoulderBottom + B.shoulderTop) / 2
+      // Front, lateral and REAR deltoid all read as the shoulder.
+      expect(classifyRegion({ x: 0.45, y: capY, z: 0.05 }, sex)).toBe('leftShoulder')
+      expect(classifyRegion({ x: -0.45, y: capY, z: 0.05 }, sex)).toBe('rightShoulder')
+      expect(classifyRegion({ x: 0.42, y: capY, z: -0.25 }, sex)).toBe('leftShoulder')
+      expect(classifyRegion({ x: -0.42, y: capY, z: -0.25 }, sex)).toBe('rightShoulder')
+      // Top of the shoulder ridge too.
+      expect(classifyRegion({ x: B.shoulderMinX + 0.05, y: B.shoulderTop + 0.03, z: 0 }, sex)).toBe(
+        'leftShoulder',
+      )
+      // Below the armpit line, the same lateral offset is the arm.
+      expect(classifyRegion({ x: 0.45, y: B.shoulderBottom - 0.1, z: 0.02 }, sex)).toBe('leftArm')
+    }
+  })
+
   it('keeps the armpit / torso side out of the back regions', () => {
     for (const sex of SEXES) {
       const B = REGION_BOUNDS[sex]
-      // Lateral chest surface at the armpit curves behind the z-centroid but
-      // must read as chest, never upper back.
-      const armpit = { x: B.armMinX - 0.05, y: (B.shoulderTop + B.pecBottom) / 2, z: -0.2 }
+      // Lateral chest surface below the shoulder cap curves behind the
+      // z-centroid but must read as chest, never upper back.
+      const armpit = { x: B.armMinX - 0.05, y: (B.shoulderBottom + B.pecBottom) / 2, z: -0.2 }
       expect(classifyRegion(armpit, sex)).toBe('chest')
       expect(classifyRegion({ ...armpit, x: -armpit.x }, sex)).toBe('chest')
     }

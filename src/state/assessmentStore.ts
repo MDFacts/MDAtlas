@@ -102,5 +102,8 @@ export const useAssessmentStore = create<AssessmentStore>((set, get) => ({
     set({ interview: nextInterview })
   },
 
-  restart: () => set({ ...INITIAL }),
+  // Clears the assessment but preserves how the user is VIEWING the body
+  // (layer + front/back) — dismissing a tap must not snap the camera around.
+  restart: () =>
+    set((state) => ({ ...INITIAL, backView: state.backView, activeLayer: state.activeLayer })),
 }))

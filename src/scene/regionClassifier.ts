@@ -17,8 +17,12 @@ import type { BodySex } from './modelConfig'
 export interface RegionBounds {
   /** Top of the head envelope; above neckTop is head. */
   neckTop: number
-  /** Shoulder line — chest starts below, shoulders sit at it. */
+  /** Shoulder line — chest starts below, the neck column sits above. */
   shoulderTop: number
+  /** The armpit line: the shoulder cap spans from here upward (lateral of
+   * shoulderMinX), wrapping front → lateral → rear deltoid. Below it, lateral
+   * territory belongs to the arm. */
+  shoulderBottom: number
   /** Bottom of the pecs/bust: chest ↔ upper-abdomen boundary. */
   pecBottom: number
   /** The navel: upper ↔ lower abdomen boundary. */
@@ -59,6 +63,7 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
   male: {
     neckTop: 3.02,
     shoulderTop: 2.77,
+    shoulderBottom: 2.48,
     pecBottom: 2.39,
     navel: 2.1,
     pelvisTop: 1.9,
@@ -70,13 +75,14 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     // Armpit crease sits at |x|≈0.42; anything lateral of it is arm. (0.45 left
     // the inner half of the upper arm reading as chest.)
     armMinX: 0.41,
-    shoulderMinX: 0.28,
+    shoulderMinX: 0.32,
     backMaxZ: -0.1,
     backHalfW: 0.32,
   },
   female: {
     neckTop: 2.76,
     shoulderTop: 2.54,
+    shoulderBottom: 2.28,
     pecBottom: 2.2,
     navel: 1.94,
     pelvisTop: 1.83,
@@ -87,7 +93,7 @@ export const REGION_BOUNDS: Record<BodySex, RegionBounds> = {
     genitalHalfW: 0.09,
     // Female armpit crease ≈0.38.
     armMinX: 0.38,
-    shoulderMinX: 0.26,
+    shoulderMinX: 0.29,
     backMaxZ: -0.1,
     backHalfW: 0.3,
   },
@@ -106,15 +112,19 @@ export function classifyRegion(point: Point3, sex: BodySex): string {
   const ax = Math.abs(x)
   const left = x > 0
 
-  // Arms first — they reach across many height bands and sit far lateral.
-  if (ax > B.armMinX && y < B.shoulderTop) {
-    return left ? 'leftArm' : 'rightArm'
-  }
-
   if (y > B.neckTop) return 'head'
-  if (y > B.shoulderTop) {
-    if (ax > B.shoulderMinX) return left ? 'leftShoulder' : 'rightShoulder'
-    return 'neck'
+
+  // Shoulder cap: from the armpit line upward and the crease outward, wrapping
+  // front → lateral → rear deltoid (deliberately no z condition, so the rear
+  // deltoid is shoulder — not upper back or chest).
+  if (y > B.shoulderBottom && ax > B.shoulderMinX) {
+    return left ? 'leftShoulder' : 'rightShoulder'
+  }
+  if (y > B.shoulderTop) return 'neck'
+
+  // Arms — everything lateral of the armpit crease below the shoulder cap.
+  if (ax > B.armMinX) {
+    return left ? 'leftArm' : 'rightArm'
   }
 
   // Back surface — torso only, and only near the spine: the torso's SIDE (armpit,
