@@ -44,7 +44,7 @@ describe('hitRegionsFor', () => {
       const chestBottom = chest.position[1] - chest.args[2] / 2 // cylinder height is args[2]
       const epiTop = epi.position[1] + epi.args[1] / 2
       const epiBottom = epi.position[1] - epi.args[1] / 2
-      const lowerTop = lower.position[1] + lower.args[0] // sphere radius
+      const lowerTop = lower.position[1] + lower.args[1] / 2 // box height is args[1]
       // Chest meets the top of the upper-abdomen band; the band meets the lower one.
       expect(Math.abs(chestBottom - epiTop)).toBeLessThan(0.06)
       expect(Math.abs(epiBottom - lowerTop)).toBeLessThan(0.12)

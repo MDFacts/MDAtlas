@@ -30,6 +30,15 @@ export interface HitRegion {
  */
 export const FEMALE_HIT_SCALE = 0.915
 
+// Torso bands are defined by their BOUNDARY heights (world y), read off each
+// rendered model with on-screen world-height reference lines and confirmed by
+// reading back the hit point of real taps:
+//   pecTopY   — chest top (clavicle line)
+//   pecBottomY— chest ↔ upper-abdomen boundary (bottom of the pecs/breasts)
+//   navelY    — upper ↔ lower abdomen boundary (the navel)
+//   pubicY    — lower-abdomen ↔ pelvis boundary (the pubic bone)
+//   hipBottomY— bottom of the pelvis bowl
+//   genitalY  — centre of the genital volume (sits IN FRONT of the pelvis)
 interface Landmarks {
   headY: number
   headR: number
@@ -37,19 +46,16 @@ interface Landmarks {
   shoulderY: number
   shoulderX: number
   shoulderR: number
-  chestY: number
-  chestHalfW: number
-  chestHalfH: number
-  torsoDepthScale: number
-  upperAbdY: number
-  upperAbdHalfH: number
+  pecTopY: number
+  pecBottomY: number
+  navelY: number
+  pubicY: number
+  hipBottomY: number
+  genitalY: number
+  torsoHalfW: number
   abdHalfW: number
-  lowerAbdY: number
-  lowerAbdR: number
-  pelvisY: number
+  torsoDepthScale: number
   pelvisHalfW: number
-  pelvisHalfH: number
-  groinY: number
   groinR: number
   armShoulderX: number
   armShoulderY: number
@@ -63,39 +69,29 @@ interface Landmarks {
   backZ: number
 }
 
-// Landmarks (world units) CALIBRATED against the rendered body's surface anatomy
-// (read off each model with on-screen world-height reference lines), so each band
-// lands on the visible feature Nathan named: chest ends just below the pecs/bust,
-// upper abs end at the navel, lower abs end at the pubic bone, and the genitals
-// sit AT the pubis. Height: male ≈3.47, female ≈3.17.
-//   MALE surface: shoulders 2.75 · pec-bottom 2.28 · navel 1.88 · pubis 1.42 · crotch 1.30
-//   FEMALE surface: shoulders 2.55 · bust-bottom 2.18 · navel 1.80 · pubis 1.38 · crotch 1.26
+// Height: male ≈3.47, female ≈3.17.
 const MALE: Landmarks = {
   headY: 3.15, headR: 0.2,
   neckY: 2.92,
   shoulderY: 2.78, shoulderX: 0.42, shoulderR: 0.16,
-  chestY: 2.52, chestHalfW: 0.3, chestHalfH: 0.24, torsoDepthScale: 0.6,
-  upperAbdY: 2.08, upperAbdHalfH: 0.2, abdHalfW: 0.27,
-  lowerAbdY: 1.68, lowerAbdR: 0.2,
-  pelvisY: 1.55, pelvisHalfW: 0.33, pelvisHalfH: 0.14,
-  groinY: 1.4, groinR: 0.13,
+  pecTopY: 2.75, pecBottomY: 2.35, navelY: 1.92, pubicY: 1.55, hipBottomY: 1.42, genitalY: 1.38,
+  torsoHalfW: 0.3, abdHalfW: 0.27, torsoDepthScale: 0.6,
+  pelvisHalfW: 0.33, groinR: 0.14,
   armShoulderX: 0.44, armShoulderY: 2.78, armHandX: 1.01, armHandY: 1.55, armR: 0.12,
   hipX: 0.18, legR: 0.135, footY: 0.05, legTopY: 1.32,
-  backZ: -0.3,
+  backZ: -0.34,
 }
 
 const FEMALE: Landmarks = {
   headY: 2.92, headR: 0.18,
   neckY: 2.62,
   shoulderY: 2.55, shoulderX: 0.4, shoulderR: 0.15,
-  chestY: 2.37, chestHalfW: 0.25, chestHalfH: 0.2, torsoDepthScale: 0.62,
-  upperAbdY: 1.99, upperAbdHalfH: 0.19, abdHalfW: 0.23,
-  lowerAbdY: 1.61, lowerAbdR: 0.19,
-  pelvisY: 1.48, pelvisHalfW: 0.32, pelvisHalfH: 0.14,
-  groinY: 1.36, groinR: 0.12,
+  pecTopY: 2.55, pecBottomY: 2.18, navelY: 1.82, pubicY: 1.5, hipBottomY: 1.36, genitalY: 1.29,
+  torsoHalfW: 0.25, abdHalfW: 0.23, torsoDepthScale: 0.62,
+  pelvisHalfW: 0.32, groinR: 0.13,
   armShoulderX: 0.42, armShoulderY: 2.46, armHandX: 1.02, armHandY: 1.56, armR: 0.115,
   hipX: 0.17, legR: 0.13, footY: 0.05, legTopY: 1.24,
-  backZ: -0.28,
+  backZ: -0.32,
 }
 
 const region = (
@@ -134,43 +130,50 @@ function legRegion(key: string, regionId: string, L: Landmarks, side: number): H
 }
 
 function buildRegions(L: Landmarks): HitRegion[] {
-  const abdW = (2 * L.abdHalfW) / 3 // three quadrant boxes tile the abdomen width
-  const abdDepth = 0.36
-  const abdH = 2 * L.upperAbdHalfH
+  const depth = 0.36
+  const uaW = (2 * L.abdHalfW) / 3 // three quadrant boxes tile the upper-abdomen width
+  const uaH = L.pecBottomY - L.navelY
+  const uaY = (L.pecBottomY + L.navelY) / 2
+  const laH = L.navelY - L.pubicY
+  const laY = (L.navelY + L.pubicY) / 2
+  const chestH = L.pecTopY - L.pecBottomY
+  const chestY = (L.pecTopY + L.pecBottomY) / 2
+  const pelH = L.pubicY - L.hipBottomY
+  const pelY = (L.pubicY + L.hipBottomY) / 2
   return [
     region('head', 'head', 'sphere', [L.headR, 20, 16], [0, L.headY, 0], { scale: [0.85, 1, 0.9] }),
     region('neck', 'neck', 'cylinder', [0.1, 0.12, 0.22, 16], [0, L.neckY, 0]),
-    // Chest: solar plexus up to the clavicles; flattened in depth.
-    region('chest', 'chest', 'cylinder', [L.chestHalfW * 0.9, L.chestHalfW, L.chestHalfH * 2, 24], [0, L.chestY, 0], {
+    // Chest: pecs/breasts down to just below them; flattened in depth.
+    region('chest', 'chest', 'cylinder', [L.torsoHalfW * 0.9, L.torsoHalfW, chestH, 24], [0, chestY, 0], {
       scale: [1, 1, L.torsoDepthScale],
     }),
-    // Upper abdomen: a SHORT band (solar plexus → navel) split RUQ / epigastric / LUQ.
-    region('rightUpperAbdomen', 'rightUpperAbdomen', 'box', [abdW, abdH, abdDepth], [(-2 * L.abdHalfW) / 3, L.upperAbdY, 0]),
-    region('epigastric', 'epigastric', 'box', [abdW, abdH, abdDepth], [0, L.upperAbdY, 0]),
-    region('leftUpperAbdomen', 'leftUpperAbdomen', 'box', [abdW, abdH, abdDepth], [(2 * L.abdHalfW) / 3, L.upperAbdY, 0]),
-    // Lower abdomen: navel → pelvis, two iliac-fossa bulbs.
-    region('rightLowerAbdomen', 'rightLowerAbdomen', 'sphere', [L.lowerAbdR, 16, 12], [-L.abdHalfW * 0.6, L.lowerAbdY, 0.03], {
-      scale: [1, 1, 0.6],
+    // Upper abdomen: pecs → navel, split RUQ / epigastric / LUQ (tiles full width).
+    region('rightUpperAbdomen', 'rightUpperAbdomen', 'box', [uaW, uaH, depth], [(-2 * L.abdHalfW) / 3, uaY, 0]),
+    region('epigastric', 'epigastric', 'box', [uaW, uaH, depth], [0, uaY, 0]),
+    region('leftUpperAbdomen', 'leftUpperAbdomen', 'box', [uaW, uaH, depth], [(2 * L.abdHalfW) / 3, uaY, 0]),
+    // Lower abdomen: navel → pubic bone. Two boxes that MEET at the midline so a
+    // centre tap never slips through to the back volume.
+    region('rightLowerAbdomen', 'rightLowerAbdomen', 'box', [L.abdHalfW, laH, depth], [-L.abdHalfW / 2, laY, 0.01]),
+    region('leftLowerAbdomen', 'leftLowerAbdomen', 'box', [L.abdHalfW, laH, depth], [L.abdHalfW / 2, laY, 0.01]),
+    // Pelvis bowl (pubic bone → hip), SHALLOW in depth so the genitals volume in
+    // front of it wins the groin tap.
+    region('pelvis', 'pelvis', 'cylinder', [L.pelvisHalfW * 0.92, L.pelvisHalfW * 0.8, pelH, 24], [0, pelY, 0], {
+      scale: [1, 1, 0.42],
     }),
-    region('leftLowerAbdomen', 'leftLowerAbdomen', 'sphere', [L.lowerAbdR, 16, 12], [L.abdHalfW * 0.6, L.lowerAbdY, 0.03], {
-      scale: [1, 1, 0.6],
-    }),
-    // Pelvis bowl; genitals = a small volume at the pubis (front, at the groin).
-    region('pelvis', 'pelvis', 'cylinder', [L.pelvisHalfW * 0.92, L.pelvisHalfW * 0.82, L.pelvisHalfH * 2, 24], [0, L.pelvisY, 0], {
-      scale: [1, 1, 0.62],
-    }),
-    region('genitals', 'genitals', 'sphere', [L.groinR, 16, 12], [0, L.groinY, 0.06], { scale: [1, 0.8, 0.7] }),
+    // Genitals: a small volume pushed well forward at the pubis so it is the
+    // front-most thing there and is selected before the pelvis behind it.
+    region('genitals', 'genitals', 'sphere', [L.groinR, 16, 12], [0, L.genitalY, 0.12], { scale: [1, 0.8, 0.85] }),
     region('rightShoulder', 'rightShoulder', 'sphere', [L.shoulderR, 16, 12], [-L.shoulderX, L.shoulderY, 0]),
     region('leftShoulder', 'leftShoulder', 'sphere', [L.shoulderR, 16, 12], [L.shoulderX, L.shoulderY, 0]),
     armRegion('rightArm', 'rightArm', L, -1),
     armRegion('leftArm', 'leftArm', L, 1),
     legRegion('rightLeg', 'rightLeg', L, -1),
     legRegion('leftLeg', 'leftLeg', L, 1),
-    // Back volumes sit WELL behind the torso (narrower than the body and pushed
-    // deep in −z) so a front ray always reaches a front volume first and never
-    // selects the back; from behind the model flips 180° and they face the camera.
-    region('upperBack', 'upperBack', 'box', [L.chestHalfW * 1.7, L.chestHalfH * 2.2, 0.18], [0, L.chestY - 0.05, L.backZ]),
-    region('lowerBack', 'lowerBack', 'box', [L.abdHalfW * 1.7, (L.chestY - L.pelvisY) * 0.6, 0.18], [0, (L.upperAbdY + L.lowerAbdY) / 2, L.backZ]),
+    // Back volumes sit WELL behind the torso (pushed deep in −z). The front is now
+    // gap-free, so a front ray always hits a front volume first and never selects
+    // the back; from behind the model flips 180° and these face the camera.
+    region('upperBack', 'upperBack', 'box', [L.torsoHalfW * 1.7, chestH * 1.3, 0.18], [0, chestY - 0.05, L.backZ]),
+    region('lowerBack', 'lowerBack', 'box', [L.abdHalfW * 1.7, uaH + laH, 0.18], [0, (uaY + laY) / 2, L.backZ]),
   ]
 }
 

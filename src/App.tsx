@@ -14,6 +14,7 @@ declare global {
   interface Window {
     __mdatlas?: {
       selectRegion: (regionId: string) => void
+      getState: () => { tapPoint: { x: number; y: number; z: number } | null; selectedRegionId: string | null }
     }
   }
 }
@@ -117,6 +118,7 @@ export default function App() {
     window.__mdatlas = {
       selectRegion: (regionId: string) =>
         useAssessmentStore.getState().selectRegion(regionId, { x: 0, y: 2, z: 0.3 }),
+      getState: () => useAssessmentStore.getState(),
     }
     return () => {
       delete window.__mdatlas
