@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ComponentType, SVGProps } from 'react'
 import type { AnatomyLayer } from '../anatomy/anatomyMap'
 import type { BodySex } from '../scene/modelConfig'
@@ -25,9 +25,22 @@ export function LayerSwitcher() {
   const setBodySex = useAssessmentStore((state) => state.setBodySex)
   // Collapsed by default on mobile; always open (and toggle hidden) on md+.
   const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // Close the mobile menu when tapping anywhere outside it (e.g. the model).
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [open])
 
   return (
-    <div className="no-print absolute left-4 top-4 flex flex-col items-start gap-2.5">
+    <div ref={rootRef} className="no-print absolute left-4 top-4 flex flex-col items-start gap-2.5">
       {/* Mobile-only toggle — a menu icon that expands the panels. */}
       <button
         type="button"
